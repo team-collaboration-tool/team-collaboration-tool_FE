@@ -2,9 +2,9 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import './Login.css';
 
-import Logo from '../../../public/협업의민족_로고 1.svg';
-import LockIcon from '../../../public/lock_icon.svg';
-import UserIcon from '../../../public/user_icon.svg';
+import Logo from '../../asset/협업의민족_로고 1.svg';
+import LockIcon from '../../asset/lock_icon.svg';
+import UserIcon from '../../asset/user_icon.svg';
 
 const Login = () => {
   const [email, setEmail] = React.useState("");
