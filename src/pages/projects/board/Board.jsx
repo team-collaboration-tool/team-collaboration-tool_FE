@@ -445,9 +445,9 @@ export default function Board() {
             const value_PostMake_content = content;
 
             const LOG_PostMake = {
-                value_PostMake_title, 
-                value_PostMake_isNotice, 
-                value_PostMake_files, 
+                value_PostMake_title,
+                value_PostMake_isNotice,
+                value_PostMake_files,
                 value_PostMake_content,
             };
 
@@ -480,7 +480,7 @@ export default function Board() {
         // 게시글 작성 중 투표 생성 시, 투표 선택지 추가
         let CountOption_MakeVote = 2;
         const addOptionBtn = document.getElementById("VoteMake_AddOption");
-        const optionContainer = document.getElementById("VoteMake_OptionContainer");
+        const optionContainer = document.getElementById("VoteMake_OptionContainer_all");
 
         const onAddOption = () => {
             if (CountOption_MakeVote >= 8) {
@@ -489,25 +489,36 @@ export default function Board() {
             }
             CountOption_MakeVote++;
 
+            // 새로운 컨테이너 div 생성
+            const OptionWrapper = document.createElement("div");
+            OptionWrapper.className = "VoteMake_OptionContainer_one";
+
+            // 선택지 input 생성
             const NewOption = document.createElement("input");
             NewOption.type = "text";
             NewOption.className = "VoteMake_Option";
             NewOption.placeholder = "선택지";
             NewOption.required = true;
 
+            // 삭제 버튼 생성
             const NewDelete = document.createElement("button");
             NewDelete.type = "button";
             NewDelete.id = "VoteMake_DeleteOption";
             NewDelete.textContent = "-";
 
+            // 삭제 이벤트 등록
             NewDelete.addEventListener("click", () => {
                 CountOption_MakeVote--;
-                NewOption.remove();
-                NewDelete.remove();
+                OptionWrapper.remove(); // div 통째로 삭제
             });
 
-            optionContainer?.appendChild(NewOption);
-            optionContainer?.appendChild(NewDelete);
+            // div 내부에 input과 button 추가
+            OptionWrapper.appendChild(NewOption);
+            OptionWrapper.appendChild(NewDelete);
+
+            // optionContainer에 div 전체 추가
+            optionContainer?.appendChild(OptionWrapper);
+
             console.log(`CountOption_MakeVote++ == ${CountOption_MakeVote}`);
         };
         addOptionBtn && addOptionBtn.addEventListener("click", onAddOption);
@@ -556,7 +567,7 @@ export default function Board() {
         };
         makeVoteBtn && makeVoteBtn.addEventListener("click", onMakeVote);
 
-        
+
         return () => {
             // switch1 && switch1.removeEventListener("click", onSwitch1);
             // switch2 && switch2.removeEventListener("click", onSwitch2);
@@ -640,9 +651,15 @@ export default function Board() {
 
                     <div className="VoteMake_item">
                         <label>선택지들</label>
-                        <div id="VoteMake_OptionContainer">
-                            <input type="text" className="VoteMake_Option" placeholder="선택지" required />
-                            <input type="text" className="VoteMake_Option" placeholder="선택지" required />
+
+                        {/* 선택지들 컨테이너 2개임 == 전체용, 개별용*/}
+                        <div id="VoteMake_OptionContainer_all">
+                            <div class="VoteMake_OptionContainer_one">
+                                <input type="text" className="VoteMake_Option" placeholder="선택지" required />
+                            </div>
+                            <div class="VoteMake_OptionContainer_one">
+                                <input type="text" className="VoteMake_Option" placeholder="선택지" required />
+                            </div>
                         </div>
                         <button type="button" id="VoteMake_AddOption">선택지 추가</button>
                     </div>
@@ -671,7 +688,7 @@ export default function Board() {
             </div>
 
             {/* 6번: 게시글 보기 (리액트 js로 채움) */}
-            <div className="GaeSiPan_See"/>
+            <div className="GaeSiPan_See" />
         </>
     );
 }
