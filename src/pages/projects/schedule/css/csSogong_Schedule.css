@@ -1,0 +1,507 @@
+/* 기본 배치 및 애니메이션 */
+/* * {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-sizing: border-box;
+    font-size: 100%;
+    vertical-align: baseline;
+}
+
+html,
+body {
+    display: block;
+    font-size: 100%;
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+    background-color: rgb(255, 255, 255);
+
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "Helvetica Neue",
+        Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    padding-top: 0;
+}
+
+#root {
+    position: relative;
+    min-height: 100vh;
+} */
+
+/* header {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100px;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 3;
+}
+
+#logo_header {
+    position: fixed;
+    transform: translate(0, 0);
+    left: 30px;
+    top: 10px;
+} */
+
+/* #switch_1 {
+    cursor: pointer;
+
+    position: absolute;
+    transform: translate(0, -50%);
+    left: 200px;
+    top: 50%;
+    width: 90px;
+    height: 30px;
+    text-align: center;
+    border-radius: 2px;
+    background-color: white;
+    color: rgb(0, 0, 0);
+    align-items: center;
+    justify-content: center;
+    display: flex;
+}
+
+#switch_2 {
+    cursor: pointer;
+
+    position: absolute;
+    transform: translate(0, -50%);
+    left: 320px;
+    top: 50%;
+    width: 90px;
+    height: 30px;
+    text-align: center;
+    border-radius: 2px;
+    background-color: white;
+    color: rgb(0, 0, 0);
+    align-items: center;
+    justify-content: center;
+    display: flex;
+} */
+
+
+
+
+/* 시간조율표 만들기 */
+.TimeSelect_make {
+    display: block;
+
+    position: absolute;
+    transform: translate(-50%, 0);
+    left: 50%;
+    top: 5px;
+    width: 1600px;
+    height: 800px;
+    background-color: rgba(255, 255, 255);
+    border: 2px solid rgb(0, 0, 0);
+    border-radius: 15px;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+
+    margin: 2rem auto;
+    padding: 2rem;
+}
+.TimeSelect_make.off {
+    display: none;
+}
+
+
+/* 뷰 배치 컨테이너 설정 */
+.container_TimeSelect_Garo {
+    display: flex;
+    flex-direction: row;
+}
+.container_TimeSelect_Sero {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    /* border: 1px black solid; */
+}
+
+
+#TimeSelect_make_title {
+    font-size: 1.875rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+    color: rgb(0, 0, 0);
+}
+
+.TimeSelect_make_item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 1rem;
+
+    width: 50%;
+
+    /* border: 1px black solid; */
+}
+
+.TimeSelect_make_label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: rgb(0, 0, 0);
+    margin-bottom: 0.25rem;
+
+    align-self: flex-start;
+}
+
+.TimeSelect_make_item input[type="date"],
+.TimeSelect_make_item input[type="time"],
+.TimeSelect_make_item input[type="text"],
+.TimeSelect_make_item select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid rgb(255, 255, 255);
+    background-color: rgb(0, 0, 0);
+    color: rgb(255, 255, 255);
+    border-radius: 8px;
+    transition: all 0.2s;
+    box-sizing: border-box;
+    filter: invert(1);
+}
+
+.TimeSelect_make_item input[type="date"]:focus,
+.TimeSelect_make_item input[type="time"]:focus,
+.TimeSelect_make_item input[type="text"]:focus,
+.TimeSelect_make_item select:focus {
+    outline: none;
+    border-color: #33A1E0;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.25);
+}
+
+.TimeSelect_make_buttoncontainer {
+    display: flex;
+    justify-content: center;
+    padding-top: 1.5rem;
+}
+
+#TimeSelect_make_button {
+    cursor: pointer;
+
+    padding: 0.5rem 1.5rem;
+    background-color: #33A1E0;
+    color: #ffffff;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    border: none;
+}
+
+.TimeSelect_made_list {
+    margin-top: 50px;
+    width: 80%;
+    height: 80%;
+    border: 1.5px solid rgb(0, 0, 0);
+    border-radius: 0.5rem;
+}
+
+.TimeSelect_item {
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    font-weight: 700;
+    color: rgb(255, 255, 255);
+    border: 1px solid rgb(0, 0, 0);
+    border-radius: 0.5rem;
+    margin: 0.5rem;
+}
+
+.TimeSelect_item_title {
+    color: rgb(0, 0, 0);
+}
+
+
+/* 1번: 시간조율 */
+.TimeSelect {
+    display: none;
+
+    position: absolute;
+    transform: translate(-50%, 0);
+    left: 50%;
+    top: 125px;
+    width: 1600px;
+    height: 800px;
+    border: 2px solid rgb(0, 0, 0);
+    border-radius: 20px;
+    background-color: rgb(255, 255, 255);
+    z-index: 2;
+}
+
+.TimeSelect.on {
+    display: block;
+}
+
+/* #TimeSelect_title {
+    position: absolute;
+    left: 40px;
+    top: 30px;
+    font-size: 1.875rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+    color: rgb(0, 0, 0);
+} */
+
+/* 생성창으로 돌아가기 */
+#exit_TimeSelect {
+    cursor: pointer;
+
+    position: absolute;
+    left: 20px;
+    top: 15px;
+    width: 105px;
+    height: 35px;
+    padding: 0.5rem 1.5rem;
+    /* background-color: #33A1E0; */
+    background-color: rgb(0, 0, 0, 0.5);
+    color: white;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+/* 위에 요일 표기 */
+#box_upDay {
+    position: absolute;
+    transform: translate(-50%, 0);
+    left: 50%;
+    top: -50px;
+    width: 528.5px;
+    height: 50px;
+    /* border: 2px solid rgb(0, 0, 0);
+    border-radius: 20px; */
+    z-index: 3;
+    pointer-events: none;
+    color: rgb(0, 0, 0);
+
+    display: flex;
+    flex-direction: row;
+}
+
+.box_upDay_mode {
+    width: 75px;
+    height: inherit;
+    font-size: 13.75px;
+    text-align: center;
+    /* border: 1px solid rgb(0, 0, 0);
+    border-radius: 2.5px; */
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#box_upDay_rightShow {
+    position: absolute;
+    transform: translate(-50%, 0);
+    left: 50%;
+    top: -50px;
+    width: 528.5px;
+    height: 50px;
+    /* border: 2px solid rgb(0, 0, 0);
+    border-radius: 20px; */
+    z-index: 3;
+    pointer-events: none;
+    color: rgb(0, 0, 0);
+
+    display: flex;
+    flex-direction: row;
+}
+
+
+/* 왼쪽에 시간대 표기 */
+#box_leftTime {
+    position: absolute;
+    transform: translate(0, 0);
+    left: -75px;
+    top: -15px;
+    width: 75px;
+    max-height: 1470px;
+    /* max 높이가 1470px */
+
+
+    z-index: 2;
+    pointer-events: none;
+    color: #000;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.box_leftTime_mode {
+    margin: 0;
+    width: 75px;
+    height: 30px;
+    font-size: 13.75px;
+    /* border: 1px solid rgb(0, 0, 0);
+    border-radius: 2.5px; */
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#box_leftTime_rightShow {
+    position: absolute;
+    transform: translate(0, 0);
+    left: -75px;
+    top: -15px;
+    width: 75px;
+    height: 1470px;
+    /* border: 2px solid rgb(0, 0, 0);
+    border-radius: 20px; */
+    z-index: 2;
+    pointer-events: none;
+    color: #000;
+
+    display: flex;
+    flex-direction: column;
+}
+
+/* .time_label {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #4b5563;
+    text-align: center;
+    border-radius: 6px;
+    padding: 4px;
+} */
+
+
+
+/* 오른쪽에 선택된 정보 표기 */
+#box_rightResult {
+    position: absolute;
+    transform: translate(0, 0);
+    left: 1200px;
+    top: 1150px;
+    width: 300px;
+    height: 600px;
+    /* border: 2px solid rgb(0, 0, 0); */
+    /* border-radius: 20px; */
+    background-color: rgba(0, 0, 0, 0.2);
+    z-index: 1;
+    white-space: pre-wrap;
+}
+
+/* 드래그 구간 */
+#GRID_leftSelect {
+    /* 박스 테두리 설정 */
+    position: absolute;
+    transform: translate(0, -50%);
+    right: 55%;
+    top: 50%;
+    width: 525px;
+    height: 540px;
+    /* border: 2px solid rgb(0, 0, 0); */
+    z-index: 1;
+    overflow: visible;
+
+    /* 그리드 칸 */
+    display: grid;
+    /* grid-template-columns: repeat(7, 1fr);
+    grid-template-rows: repeat(18, 1fr);
+    user-select: none; */
+}
+
+#GRID_leftSelect_label {
+    position: absolute;
+    transform: translate(-50%, 0);
+    left: 50%;
+    top: -87.5px;
+    font-size: 25px;
+    white-space: nowrap;
+    color: rgb(0, 0, 0);
+}
+
+#GRID_leftSelect_GridContainer {
+    width: inherit;
+    height: inherit;
+}
+
+.grid_cell {
+    /* border: 1px solid rgb(0, 0, 0); */
+    cursor: pointer;
+}
+
+.grid_cell.selected {
+    background-color: #33A1E0;
+}
+
+#GRID_rightShow {
+    position: absolute;
+    transform: translate(0, -50%);
+    left: 55%;
+    top: 50%;
+    width: 525px;
+    height: 540px;
+    /* border: 2px solid rgb(0, 0, 0); */
+    z-index: 1;
+
+    /* 그리드 칸 */
+    display: grid;
+    /* grid-template-columns: repeat(7, 1fr);
+    grid-template-rows: repeat(18, 1fr);
+    user-select: none; */
+}
+
+#GRID_rightShow_label {
+    position: absolute;
+    transform: translate(-50%, 0);
+    left: 50%;
+    top: -87.5px;
+    font-size: 25px;
+    white-space: nowrap;
+    color: rgb(0, 0, 0);
+}
+
+#GRID_rightShow_GridContainer {
+    width: inherit;
+    height: inherit;
+}
+
+/* .grid_cell_right {
+    border: 1px solid rgb(0, 0, 0);
+    cursor: pointer;
+} */
+
+.grid_cell_right.selected {
+    background-color: rgb(255, 155, 55);
+}
+
+#Refresh_rightshow {
+    cursor: pointer;
+    display: flex;
+
+    position: absolute;
+    right: -60px;
+    top: 12px;
+    width: 35px;
+    height: 35px;
+    background-color: rgb(255, 255, 255);
+    border: 2px solid rgb(0, 0, 0);
+    border-radius: 7px;
+    align-items: center;
+    justify-content: center;
+}
+
+#between_GridLine {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    left: 50%;
+    top: 50%;
+    width: 5px;
+    height: 700px;
+    background-color: rgb(0, 0, 0);
+    border-radius: 25px;
+}
