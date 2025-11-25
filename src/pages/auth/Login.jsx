@@ -2,9 +2,11 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import './Login.css';
 
-import Logo from '../../asset/협업의민족_로고 1.svg';
-import LockIcon from '../../asset/lock_icon.svg';
-import UserIcon from '../../asset/user_icon.svg';
+import Logo from '../../asset/user_icon/logo.svg';
+import LockIcon from '../../asset/user_icon/lock_icon.svg';
+import UserIcon from '../../asset/user_icon/user_icon.svg';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const Login = () => {
   const [email, setEmail] = React.useState("");
@@ -17,8 +19,7 @@ const Login = () => {
     e.preventDefault();
     await new Promise((r) => setTimeout(r, 1000));
 
-    const response = await fetch(
-      `${process.env.REACT_APP_API_URL}/`,
+    const response = await fetch(`${API_URL}/users/login`,
       {
         method: "POST",
         headers: {
