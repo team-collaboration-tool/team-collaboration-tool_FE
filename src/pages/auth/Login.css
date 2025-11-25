@@ -8,7 +8,7 @@
 .Login-form {
     position: relative;
     width: 400px;
-    height: 580px;
+    height: 640px;
     padding: 40px 32px;
     background: #FFFFFF;
     border: 1px solid #E0E0E0;
@@ -150,7 +150,7 @@
 /* 회원가입 버튼 */
 .signup-button {
     width: 80%;
-    height: 44px;
+    height: 50px;
     background: #6C6C6C;
     border: none;
     border-radius: 6px;
