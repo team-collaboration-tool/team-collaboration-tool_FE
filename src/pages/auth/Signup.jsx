@@ -80,7 +80,7 @@ const Signup = () => {
 
   const handleSignup = async () => {
     try {
-      const response = await fetch(`${API_URL}/users/signup`, {
+      const response = await fetch(`${API_URL}/api/users/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
