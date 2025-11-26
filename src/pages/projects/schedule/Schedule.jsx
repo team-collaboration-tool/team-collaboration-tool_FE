@@ -2,13 +2,14 @@
 // 종료 == ctrl + C
 // 자동정렬 == shift + option + F
 
+// 도메인 주소
+// http://hyupmin.ap-northeast-2.elasticbeanstalk.com/
+
 import "./css/csSogong.css";  // css 파일 선언
 import React from "react";
 
 
 export default function TimeSchedulerPage() {
-
-  // ========================================================================================
   // 기존 js 코드들
   React.useEffect(() => {
     document.title = "시간조율, 게시판";
@@ -23,14 +24,16 @@ export default function TimeSchedulerPage() {
     return () => { try { delete window.swtich_list; } catch (_) { } };
   }, []);
 
+
   // 시간조율표 입력값 5가지
   const [whenDateStart, setWhenDateStart] = React.useState("2025-10-01");
   const [howDateLong, setHowDateLong] = React.useState("");
   const [timeStart, setTimeStart] = React.useState("09:00");
   const [timeEnd, setTimeEnd] = React.useState("18:00");
   const [whatName, setWhatName] = React.useState("이름 입력");
-
   const [items, setItems] = React.useState([]); // 이거는 위에 5개 데이터를 넣은 배열로 사용
+
+
 
   // ========================================================================================
   // 테스트용 : 시간조율표 데이터
@@ -66,7 +69,13 @@ export default function TimeSchedulerPage() {
       peopleCount: test_EntireTimeTable_HowPeople,
     },
   };
+
+  // 테스트용: 
+
+
+  // 테스트용 데이터 끝
   // ========================================================================================
+
 
 
   // 시작, 종료 시간을 00분으로 고정
@@ -98,7 +107,8 @@ export default function TimeSchedulerPage() {
   }, []);
 
 
-  // 버튼: 시간조율표 생성 == 하단 리스트에 TimeSelect_item 1개 생성
+  // ============================================================
+  // 버튼: 시간조율표 생성
   const onMakeClick = React.useCallback(() => {
     if (!howDateLong) {
       alert("며칠치를 생성할지 선택하세요");
@@ -111,6 +121,7 @@ export default function TimeSchedulerPage() {
     const when_timeEnd = parseInt((timeEnd || "0").split(":")[0], 10);
     const what_Name = whatName;
 
+    // 입력값에 대한 자체 console log
     console.log("when_dateStart:", when_dateStart);
     console.log("how_dateLong_int:", how_dateLong_int);
     console.log("start time:", when_timeStart);
@@ -119,9 +130,51 @@ export default function TimeSchedulerPage() {
     console.log("조율표 이름:", what_Name);
 
     const now = new Date();
-    // const nowString = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")} ${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
     const TableNameString = what_Name;
 
+
+    // POST : /api/time-poll
+    const payload = {
+      projectId: 0,
+      creatorId: 0,
+      title: TableNameString,
+      startDate: when_dateStart,
+      duration: how_dateLong_int,
+      startTimeOfDay: {
+        hour: when_timeStart,
+        minute: 0,
+        second: 0,
+        nano: 0
+      },
+      endTimeOfDay: {
+        hour: when_timeEnd,
+        minute: 0,
+        second: 0,
+        nano: 0
+      }
+    };
+
+    // post 내용 그대로 console log
+    console.log("POST : /api/time-poll 보내는 내용 = ", payload);
+
+    fetch("http://hyupmin.ap-northeast-2.elasticbeanstalk.com/api/time-poll", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+      // return값 console log
+      .then((res) => {
+        console.log("RAW RESPONSE:", res);
+        return res.json();
+      })
+      .then((data) => {
+        console.log("POST : /api/time-poll success:", data);
+      })
+      .catch((err) => {
+        console.error("POST : /api/time-poll error:", err);
+      });
+
+    // new item 생성
     const newItem = {
       id: `${now.getTime()}`,
       createdLabel: `조율표 이름 == ${TableNameString}`,
@@ -134,7 +187,7 @@ export default function TimeSchedulerPage() {
     setItems((prev) => [newItem, ...prev]);
   }, [whenDateStart, howDateLong, timeStart, timeEnd, whatName]);
   // 
-  // 추후에, 여기에 POST 요청 넣고 받아오는 로직 넣으면 됌
+  // 추후에 여기, POST 요청에 대한 return값을 기반으로 한 로직 구성 예정
   // ================================================================================
   // ================================================================================
 
@@ -280,10 +333,55 @@ export default function TimeSchedulerPage() {
       //   if (summaryBox) summaryBox.textContent = summaryParts.length ? summaryParts.join('') : '선택된 시간이 없습니다.';
       // }
 
-      // 선택된 시간 표기 console.log로
+
+
+      // ========================================================================
+      // 드래그 하다가 손 떼는 순간 generateSummary() 실행
       function generateSummary() {
+
+        // 지우지는 말 것
+        // const summaryParts = [];
+        // days.forEach(day => {
+        //   if (!selectedByDay[day]) return;
+        //   const timeIndices = selectedByDay[day].sort((a, b) => a - b);
+        //   if (timeIndices.length === 0) return;
+
+        //   const dayTimeRanges = [];
+        //   let start = timeIndices[0];
+        //   let end = timeIndices[0];
+
+        //   for (let i = 1; i < timeIndices.length; i++) {
+        //     if (timeIndices[i] === end + 1) end = timeIndices[i];
+        //     else {
+        //       const startTime = formatTime(start);
+        //       const endTime = formatTime(end + 1);
+        //       dayTimeRanges.push(`${startTime}~${endTime}`);
+        //       start = timeIndices[i];
+        //       end = timeIndices[i];
+        //     }
+        //   }
+
+        //   const startTime = formatTime(start);
+        //   const endTime = formatTime(end + 1);
+        //   dayTimeRanges.push(`${startTime}~${endTime}`);
+        //   summaryParts.push(`${day} ${dayTimeRanges.join(', ')}`);
+        // });
+
+        // if (summaryParts.length > 0) {
+        //   console.log("선택된 시간 list ================================");
+        //   summaryParts.forEach(line => console.log(" - ", line));
+        // } else {
+        //   console.log("선택된 시간 없");
+        // }
+
+        // function formatTime(index) {
+        //   const totalMinutes = index * 30 + 9 * 60;
+        //   const hours = Math.floor(totalMinutes / 60);
+        //   const minutes = totalMinutes % 60;
+        //   return String(hours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0');
+        // }
+
         const selectedByDay = {};
-        const summaryParts = [];
         const selectedCells = new Set();
 
         cells.forEach((cell, index) => {
@@ -297,47 +395,36 @@ export default function TimeSchedulerPage() {
           }
         });
 
-        days.forEach(day => {
-          if (!selectedByDay[day]) return;
-          const timeIndices = selectedByDay[day].sort((a, b) => a - b);
-          if (timeIndices.length === 0) return;
 
-          const dayTimeRanges = [];
-          let start = timeIndices[0];
-          let end = timeIndices[0];
+        // right_GRID 업데이트 함수
+        updateRightGridBySelection(test_EntireTimeTable_Array, test_EntireTimeTable_HowPeople, cols, rows, selectedCells);
 
-          for (let i = 1; i < timeIndices.length; i++) {
-            if (timeIndices[i] === end + 1) end = timeIndices[i];
-            else {
-              const startTime = formatTime(start);
-              const endTime = formatTime(end + 1);
-              dayTimeRanges.push(`${startTime}~${endTime}`);
-              start = timeIndices[i];
-              end = timeIndices[i];
-            }
+        // POST : /api/time-poll/submit
+        const availableTimes = [];
+        cells.forEach((cell, index) => {
+          if (cell.classList.contains('selected')) {
+            const dayIndex = index % cols;
+            const timeIndex = Math.floor(index / cols);
+            availableTimes.push({ dayIndex, timeIndex });
           }
-
-          const startTime = formatTime(start);
-          const endTime = formatTime(end + 1);
-          dayTimeRanges.push(`${startTime}~${endTime}`);
-          summaryParts.push(`${day} ${dayTimeRanges.join(', ')}`);
         });
 
-        if (summaryParts.length > 0) {
-          console.log("선택된 시간 list ================================");
-          summaryParts.forEach(line => console.log(" - ", line));
-        } else {
-          console.log("선택된 시간 없");
-        }
-        // 선택된 셀 기준으로 오른쪽 전체 시간표 업데이트
-        updateRightGridBySelection(test_EntireTimeTable_Array, test_EntireTimeTable_HowPeople, cols, rows, selectedCells);
-      }
+        if (availableTimes.length > 0) {
+          const payload = {
+            pollId: 0,   // TODO: 실제 pollId로 교체할 것
+            userId: 0,   // TODO: 실제 userId로 교체할 것
+            availableTimes: availableTimes,
+          };
 
-      function formatTime(index) {
-        const totalMinutes = index * 30 + 9 * 60;
-        const hours = Math.floor(totalMinutes / 60);
-        const minutes = totalMinutes % 60;
-        return String(hours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0');
+          // 실제 전송 직전, 내용 그대로 console.log
+          console.log("POST : /api/time-poll/submit 보내는 내용 = ", payload);
+
+          fetch("http://hyupmin.ap-northeast-2.elasticbeanstalk.com/api/time-poll/submit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          })
+        }
       }
 
       cells.forEach(cell => {
