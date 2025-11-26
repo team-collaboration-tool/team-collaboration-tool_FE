@@ -19,7 +19,7 @@ const Login = () => {
     e.preventDefault();
     await new Promise((r) => setTimeout(r, 1000));
 
-    const response = await fetch(`${API_URL}/users/login`,
+    const response = await fetch(`${API_URL}/api/users/login`,
       {
         method: "POST",
         headers: {
