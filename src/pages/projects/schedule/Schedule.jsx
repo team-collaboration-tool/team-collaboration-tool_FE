@@ -8,6 +8,10 @@
 import "./css/csSogong.css";  // css 파일 선언
 import React from "react";
 
+// baseURL import
+const baseURL =
+  import.meta.env.VITE_DEV_PROXY_URL;
+
 
 export default function TimeSchedulerPage() {
   // 기존 js 코드들
@@ -157,9 +161,16 @@ export default function TimeSchedulerPage() {
     // post 내용 그대로 console log
     console.log("POST : /api/time-poll 보내는 내용 = ", payload);
 
-    fetch("http://hyupmin.ap-northeast-2.elasticbeanstalk.com/api/time-poll", {
+    // 로그인 토큰
+    const token = localStorage.getItem("token");
+
+    // baseURL 사용
+    fetch(`${baseURL}/api/time-poll`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,   // 로그인 토큰
+      },
       body: JSON.stringify(payload),
     })
       // return값 console log
@@ -419,9 +430,15 @@ export default function TimeSchedulerPage() {
           // 실제 전송 직전, 내용 그대로 console.log
           console.log("POST : /api/time-poll/submit 보내는 내용 = ", payload);
 
-          fetch("http://hyupmin.ap-northeast-2.elasticbeanstalk.com/api/time-poll/submit", {
+          // 로그인 토큰
+          const token = localStorage.getItem("token");
+
+          fetch(`${baseURL}/api/time-poll/submit`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`,
+            },
             body: JSON.stringify(payload),
           })
         }
