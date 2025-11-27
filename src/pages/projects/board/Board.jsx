@@ -8,6 +8,11 @@
 import "./css/csSogong_Board.css";
 import React from "react";
 
+// baseURL import
+const baseURL =
+    import.meta.env.VITE_DEV_PROXY_URL;
+
+
 
 export default function Board() {
 
@@ -309,12 +314,12 @@ export default function Board() {
                     const votersHTML = voteInfo.isAnonymous
                         ? ""
                         : voters
-                              .map(
-                                  (name) => `
+                            .map(
+                                (name) => `
               <div class="VoteResult_item_WhoVoted_person">${escapeHTML(name)}</div>
             `
-                              )
-                              .join("");
+                            )
+                            .join("");
 
                     const whoVotedBlock = voteInfo.isAnonymous
                         ? ""
@@ -550,8 +555,14 @@ export default function Board() {
                 });
             }
 
-            fetch("http://hyupmin.ap-northeast-2.elasticbeanstalk.com/api/posts", {
+            // 로그인 토큰
+            const token = localStorage.getItem("token");
+
+            fetch(`${baseURL}/api/posts`, {
                 method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                },
                 body: formData,
             })
                 // return 값 console log
@@ -680,7 +691,7 @@ export default function Board() {
             console.log("투표 생성 로그");
             console.log(LOG_VoteMake);
 
-            
+
             // POST : /api/votes
             const endTimeISO = `${value_VoteMake_Deadline_Day}T${value_VoteMake_Deadline_Time}:00Z`;
 
@@ -697,9 +708,15 @@ export default function Board() {
             // post 내용 그대로 console log
             console.log("POST : /api/votes 보내는 내용 = ", votePayload);
 
-            fetch("http://hyupmin.ap-northeast-2.elasticbeanstalk.com/api/votes", {
+            // 로그인 토큰
+            const token = localStorage.getItem("token");
+
+            fetch(`${baseURL}/api/votes`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                },
                 body: JSON.stringify(votePayload),
             })
                 // return 값 console log
