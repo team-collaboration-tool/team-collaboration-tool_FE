@@ -21,6 +21,8 @@ const PageNavBar = ({ projectName }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const isCalendarPage = location.pathname.endsWith("/calendar");
+  const isMyPage = location.pathname.endsWith("/");
+  const isInvalidProject = !projectID || projectID === "undefined";
 
   const pages = [
     {
@@ -69,7 +71,7 @@ const PageNavBar = ({ projectName }) => {
   ));
 
   const toggleModal = () => {
-    if (isCalendarPage) return;
+    if (isCalendarPage || isMyPage || isInvalidProject) return;
     setIsModalOpen(!isModalOpen);
   };
 
@@ -81,7 +83,12 @@ const PageNavBar = ({ projectName }) => {
     <>
       <div className="NavBar-bottom">
         <div className="bottom">
-          <div className="ProjectName" onClick={toggleModal}>
+          <div
+            className={`ProjectName ${
+              isCalendarPage || isMyPage || isInvalidProject ? "disabled" : ""
+            }`}
+            onClick={toggleModal}
+          >
             프로젝트 목록
           </div>
           <div className="button">
