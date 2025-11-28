@@ -6,7 +6,7 @@ import Logo from '../../asset/user_icon/logo.svg';
 import LockIcon from '../../asset/user_icon/lock_icon.svg';
 import UserIcon from '../../asset/user_icon/user_icon.svg';
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_DEV_PROXY_URL;
 
 const Login = () => {
   const [email, setEmail] = React.useState("");
