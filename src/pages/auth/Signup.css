@@ -132,6 +132,7 @@
   white-space: nowrap;
 }
 
+
 .error-message .caution-icon {
   width: 14px;
   height: 14px;
@@ -295,7 +296,7 @@
 .signup-complete-step {
   position: relative;
   width: 400px;
-  height: 580px;
+  height: 670px;
   padding: 60px 32px;
   background: #fff;
   border: 1px solid #e0e0e0;
