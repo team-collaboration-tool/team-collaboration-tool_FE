@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
 import "./Signup.css";
 
@@ -7,7 +7,7 @@ import completeSignupImg from "../../asset/user_icon/welcome.svg";
 import next from "../../asset/user_icon/next_icon.svg";
 import caution from "../../asset/user_icon/caution_icon.svg";
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_DEV_PROXY_URL;
 
 // 전공/직무
 const MAJOR_OPTIONS = [
@@ -27,6 +27,7 @@ const Signup = () => {
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [emailCheckStatus, setEmailCheckStatus] = useState('');
   const [passwordError, setPasswordError] = useState(false);
+  const emailInputRef = useRef(null);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -36,7 +37,6 @@ const Signup = () => {
     major: "",
   });
 
-  // 입력값 변경 핸들러
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -59,12 +59,62 @@ const Signup = () => {
       return;
     }
 
+    const emailInput = emailInputRef.current;
+    if (emailInput && !emailInput.validity.valid) {
+      emailInput.reportValidity();
+      return;
+    }
+
     try {
-      // 중복 확인 API 호출하기
-      const isDuplicate = false;
-      
-      setEmailCheckStatus(isDuplicate ? 'duplicate' : 'available');
-      alert(isDuplicate ? "이미 사용 중인 이메일입니다." : "사용 가능한 이메일입니다.");
+      setEmailCheckStatus('');
+      const response = await fetch(
+        `${API_URL}/api/users/check-email?email=${encodeURIComponent(formData.email)}`,
+        {
+          method: "GET",
+          headers: {
+            "Accept": "application/json",
+          },
+        },
+      );
+
+      if (response.status === 409) {
+        setEmailCheckStatus('duplicate');
+        alert("이미 사용 중인 이메일입니다.");
+        return;
+      }
+
+      if (response.ok) {
+        const result = await response.json().catch(() => ({}));
+
+        const isDuplicate =
+          result?.available === false ||
+          result?.duplicate === true ||
+          result?.isDuplicate === true ||
+          result?.exists === true ||
+          result?.data?.duplicate === true ||
+          result?.data?.exists === true;
+
+        if (isDuplicate) {
+          setEmailCheckStatus('duplicate');
+          alert(result?.message || "이미 사용 중인 이메일입니다.");
+          return;
+        }
+
+        const isAvailable = result?.available === true;
+
+        if (isAvailable) {
+          setEmailCheckStatus('available');
+          alert(result?.message || "사용 가능한 이메일입니다.");
+          return;
+        }
+
+        alert(result?.message || "중복 확인 결과를 확인할 수 없습니다.");
+        return;
+      }
+
+      const errorData = await response.json().catch(() => ({}));
+      const message = errorData?.message || "중복 확인에 실패했습니다.";
+      alert(message);
     } catch (error) {
       console.error("중복 확인 오류:", error);
       alert("중복 확인 중 오류가 발생했습니다.");
@@ -80,13 +130,13 @@ const Signup = () => {
 
   const handleSignup = async () => {
     try {
-      const response = await fetch(`${API_URL}/users/signup`, {
+      const response = await fetch(`${API_URL}/api/users/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          passowrd: formData.password,
+          password: formData.password,
           name: formData.name,
           email: formData.email,
           phone: formData.phonenumber,
@@ -148,6 +198,7 @@ const Signup = () => {
               name="email"
               value={formData.email}
               onChange={handleInputChange}
+              ref={emailInputRef}
               required
             />
             <button 
