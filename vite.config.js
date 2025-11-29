@@ -7,4 +7,10 @@ export default defineConfig({
   server: {
     open: true,
   },
+  proxy: {
+    "/api": {
+      target: "http://hyupmin.ap-northeast-2.elasticbeanstalk.com",
+      changeOrigin: true,
+    },
+  },
 });
