@@ -54,7 +54,7 @@ const App = () => {
           path="/project/:projectID"
           element={<Layout showPageNav={true} />}
         >
-          <Route index element={<Calendar />} />
+          <Route index element={<Project />} />
           <Route path="setting" element={<ProjectSetting />} />
           <Route path="calendar" element={<Calendar />} />
 
