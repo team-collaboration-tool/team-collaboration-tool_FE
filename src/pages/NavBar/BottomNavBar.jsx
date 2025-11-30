@@ -39,7 +39,7 @@ const PageNavBar = ({ projectName }) => {
       id: 3,
       name: "달력",
       src: calendarIcon,
-      to: `/project/${projectID}`,
+      to: `/project/${projectID}/calendar`,
     },
     {
       id: 4,

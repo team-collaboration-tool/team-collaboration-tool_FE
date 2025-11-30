@@ -1,6 +1,6 @@
 // Layout.jsx
 import React from "react";
-import { Outlet, useLocation, useParams } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import TopNavBar from "./pages/NavBar/TopNavBar";
 import LeftNavBar from "./pages/NavBar/LeftNavBar";
 import BottomNavBar from "./pages/NavBar/BottomNavBar";
@@ -8,12 +8,6 @@ import "./Layout.css";
 
 const Layout = ({ showPageNav }) => {
   const location = useLocation();
-  const params = useParams();
-  const currentProjectID = params.projectID;
-
-  const isCalendarPage = /^\/project\/[^\/]+\/calendar$/.test(
-    location.pathname
-  );
 
   const showLeftNavBar = () => {
     const path = location.pathname;
@@ -44,12 +38,7 @@ const Layout = ({ showPageNav }) => {
       </div>
 
       {/* 조건에 맞을 때만 사이드바 표시 */}
-      {shouldShowLeftNavBar && (
-        <LeftNavBar
-          isCalendarPage={isCalendarPage}
-          currentProjectID={currentProjectID}
-        />
-      )}
+      {shouldShowLeftNavBar && <LeftNavBar />}
 
       <main
         className={`Layout-main ${!shouldShowLeftNavBar ? "full-width" : ""}`}
