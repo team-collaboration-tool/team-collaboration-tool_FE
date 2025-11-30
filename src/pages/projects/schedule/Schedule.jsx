@@ -2,25 +2,27 @@
 // 종료 == ctrl + C
 // 자동정렬 == shift + option + F
 
-import "./css/csSogong.css";  // css 파일 선언
+import "./css/csSogong.css"; // css 파일 선언
 import React from "react";
 
-
 export default function TimeSchedulerPage() {
-
   // ========================================================================================
   // 기존 js 코드들
   React.useEffect(() => {
     document.title = "시간조율, 게시판";
 
     const list = [
-      document.querySelector('.TimeSelect_make'),
-      document.querySelector('.TimeSelect'),
-      document.querySelector('.GaeSiPan_list'),
-      document.querySelector('.GaeSiPan_Write'),
+      document.querySelector(".TimeSelect_make"),
+      document.querySelector(".TimeSelect"),
+      document.querySelector(".GaeSiPan_list"),
+      document.querySelector(".GaeSiPan_Write"),
     ].filter(Boolean);
     window.swtich_list = list;
-    return () => { try { delete window.swtich_list; } catch (_) { } };
+    return () => {
+      try {
+        delete window.swtich_list;
+      } catch (_) {}
+    };
   }, []);
 
   // 시간조율표 입력값 5가지
@@ -53,7 +55,7 @@ export default function TimeSchedulerPage() {
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   ];
 
   // 테스트용 : 전체 시간표에 속한 인원 수
@@ -68,7 +70,6 @@ export default function TimeSchedulerPage() {
   };
   // ========================================================================================
 
-
   // 시작, 종료 시간을 00분으로 고정
   const forceMinutes00 = React.useCallback((value) => {
     if (!value) return value;
@@ -77,17 +78,23 @@ export default function TimeSchedulerPage() {
   }, []);
 
   // 시작 시간대 입력칸
-  const onChangeTimeStart = React.useCallback((e) => {
-    setTimeStart(forceMinutes00(e.target.value));
-  }, [forceMinutes00]);
+  const onChangeTimeStart = React.useCallback(
+    (e) => {
+      setTimeStart(forceMinutes00(e.target.value));
+    },
+    [forceMinutes00]
+  );
   const onBlurTimeStart = React.useCallback(() => {
     setTimeStart((v) => forceMinutes00(v));
   }, [forceMinutes00]);
 
   // 종료 시간대 입력칸
-  const onChangeTimeEnd = React.useCallback((e) => {
-    setTimeEnd(forceMinutes00(e.target.value));
-  }, [forceMinutes00]);
+  const onChangeTimeEnd = React.useCallback(
+    (e) => {
+      setTimeEnd(forceMinutes00(e.target.value));
+    },
+    [forceMinutes00]
+  );
   const onBlurTimeEnd = React.useCallback(() => {
     setTimeEnd((v) => forceMinutes00(v));
   }, [forceMinutes00]);
@@ -96,7 +103,6 @@ export default function TimeSchedulerPage() {
   const onChangeWhatName = React.useCallback((e) => {
     setWhatName(e.target.value);
   }, []);
-
 
   // 버튼: 시간조율표 생성 == 하단 리스트에 TimeSelect_item 1개 생성
   const onMakeClick = React.useCallback(() => {
@@ -133,47 +139,48 @@ export default function TimeSchedulerPage() {
 
     setItems((prev) => [newItem, ...prev]);
   }, [whenDateStart, howDateLong, timeStart, timeEnd, whatName]);
-  // 
+  //
   // 추후에, 여기에 POST 요청 넣고 받아오는 로직 넣으면 됌
   // ================================================================================
   // ================================================================================
 
-
-
   // TimeSelect_item 클릭 시, 해당 조율표 화면에 표기
-  const onItemClick = React.useCallback((item) => {
-    window.swtich_list[0].classList.add("off");
-    window.swtich_list[1].classList.add("on");
+  const onItemClick = React.useCallback(
+    (item) => {
+      window.swtich_list[0].classList.add("off");
+      window.swtich_list[1].classList.add("on");
 
-    const mock = mockEntireTimeTables[item.id];
-    let grid = mock?.grid;
-    let peopleCount = mock?.peopleCount;
+      const mock = mockEntireTimeTables[item.id];
+      let grid = mock?.grid;
+      let peopleCount = mock?.peopleCount;
 
-    if (!grid || !peopleCount) {
-      const rows = (item.timeEndHour - item.timeStartHour) * 2;
-      const cols = item.dateLength;
+      if (!grid || !peopleCount) {
+        const rows = (item.timeEndHour - item.timeStartHour) * 2;
+        const cols = item.dateLength;
 
-      grid = Array.from({ length: cols }, () =>
-        Array.from({ length: rows }, () => 0)
-      );
-      peopleCount = 1;
-    }
+        grid = Array.from({ length: cols }, () =>
+          Array.from({ length: rows }, () => 0)
+        );
+        peopleCount = 1;
+      }
 
-    if (typeof window.TimeSelect_MoveToGrid === "function") {
-      window.TimeSelect_MoveToGrid(
-        item.dateStart,
-        item.dateLength,
-        item.timeStartHour,
-        item.timeEndHour,
+      if (typeof window.TimeSelect_MoveToGrid === "function") {
+        window.TimeSelect_MoveToGrid(
+          item.dateStart,
+          item.dateLength,
+          item.timeStartHour,
+          item.timeEndHour,
 
-        // 추가 데이터 2개 == 2차원 배열, 인원수
-        grid,
-        peopleCount
-      );
-    } else {
-      console.log("const onItemClick() 뭔가 잘못됬음 ");
-    }
-  }, [mockEntireTimeTables]);
+          // 추가 데이터 2개 == 2차원 배열, 인원수
+          grid,
+          peopleCount
+        );
+      } else {
+        console.log("const onItemClick() 뭔가 잘못됬음 ");
+      }
+    },
+    [mockEntireTimeTables]
+  );
   // const onItemClick = React.useCallback((item) => {
   //   window.swtich_list[0].classList.add("off");
   //   window.swtich_list[1].classList.add("on");
@@ -189,8 +196,6 @@ export default function TimeSchedulerPage() {
   //   }
   // }, []);
 
-
-
   // ================================================================
   // 여기부터 드래그표 관련 js들
   // ================================================================
@@ -199,9 +204,14 @@ export default function TimeSchedulerPage() {
   // 행의 개수는 1번 매개변수, 열의 개수는 2번 매개변수
   // 이렇게 2차원 배열 생성 == 해당 배열은 해당 시간조율표에 귀속
   React.useEffect(() => {
-
     // 드래그표 왼쪽 거_(실제 클릭 및 드래그 하는 곳) 생성 func
-    function setupGrid_left(dateData, rowCount, columnCount, test_EntireTimeTable_Array, test_EntireTimeTable_HowPeople) {
+    function setupGrid_left(
+      dateData,
+      rowCount,
+      columnCount,
+      test_EntireTimeTable_Array,
+      test_EntireTimeTable_HowPeople
+    ) {
       if (columnCount < 1 || columnCount > 7) {
         console.error("열 개수는 1에서 7 사이여야 합니다.");
         return;
@@ -210,11 +220,13 @@ export default function TimeSchedulerPage() {
         console.error("행 개수는 1 이상의 정수여야 합니다.");
         return;
       }
-      const container = document.getElementById('GRID_leftSelect_GridContainer');
+      const container = document.getElementById(
+        "GRID_leftSelect_GridContainer"
+      );
       // const summaryBox = document.getElementById('box_rightResult');
       if (!container) return;
-      container.innerHTML = '';
-      const allDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      container.innerHTML = "";
+      const allDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
       const cols = columnCount;
       const rows = rowCount;
@@ -223,25 +235,29 @@ export default function TimeSchedulerPage() {
       let isDragging = false;
       let selectionMode = true;
 
-      container.style.display = 'grid';
+      container.style.display = "grid";
       const COLUMN_WIDTH_PX = 75;
       container.style.gridTemplateColumns = `repeat(${cols}, ${COLUMN_WIDTH_PX}px)`;
       const ROW_HEIGHT_PX = 30;
       container.style.gridTemplateRows = `repeat(${rows}, ${ROW_HEIGHT_PX}px)`;
 
       for (let i = 0; i < totalCells; i++) {
-        const cell = document.createElement('div');
-        cell.classList.add('grid_cell');
+        const cell = document.createElement("div");
+        cell.classList.add("grid_cell");
         const row = Math.floor(i / cols);
         const col = i % cols;
-        cell.style.border = 'none';
-        cell.style.borderLeft = '1px solid rgb(0, 0, 0)';
-        if (col === cols - 1) cell.style.borderRight = '1px solid rgb(0, 0, 0)';
-        if (row === 0) cell.style.borderTop = '1px solid rgb(0, 0, 0)';
-        else cell.style.borderTop = (row % 2 === 0) ? '1px solid rgb(0, 0, 0)' : '1px dashed rgb(0, 0, 0)';
+        cell.style.border = "none";
+        cell.style.borderLeft = "1px solid rgb(0, 0, 0)";
+        if (col === cols - 1) cell.style.borderRight = "1px solid rgb(0, 0, 0)";
+        if (row === 0) cell.style.borderTop = "1px solid rgb(0, 0, 0)";
+        else
+          cell.style.borderTop =
+            row % 2 === 0
+              ? "1px solid rgb(0, 0, 0)"
+              : "1px dashed rgb(0, 0, 0)";
         container.appendChild(cell);
       }
-      const cells = container.querySelectorAll('.grid_cell');
+      const cells = container.querySelectorAll(".grid_cell");
       // 폐기: 선택된 시간 표기 (log로 대체한 코드 일단 아래에)
       // function generateSummary() {
       //   const selectedByDay = {};
@@ -287,7 +303,7 @@ export default function TimeSchedulerPage() {
         const selectedCells = new Set();
 
         cells.forEach((cell, index) => {
-          if (cell.classList.contains('selected')) {
+          if (cell.classList.contains("selected")) {
             const dayIndex = index % cols;
             const timeIndex = Math.floor(index / cols);
             const dayName = days[dayIndex];
@@ -297,7 +313,7 @@ export default function TimeSchedulerPage() {
           }
         });
 
-        days.forEach(day => {
+        days.forEach((day) => {
           if (!selectedByDay[day]) return;
           const timeIndices = selectedByDay[day].sort((a, b) => a - b);
           if (timeIndices.length === 0) return;
@@ -320,44 +336,54 @@ export default function TimeSchedulerPage() {
           const startTime = formatTime(start);
           const endTime = formatTime(end + 1);
           dayTimeRanges.push(`${startTime}~${endTime}`);
-          summaryParts.push(`${day} ${dayTimeRanges.join(', ')}`);
+          summaryParts.push(`${day} ${dayTimeRanges.join(", ")}`);
         });
 
         if (summaryParts.length > 0) {
           console.log("선택된 시간 list ================================");
-          summaryParts.forEach(line => console.log(" - ", line));
+          summaryParts.forEach((line) => console.log(" - ", line));
         } else {
           console.log("선택된 시간 없");
         }
         // 선택된 셀 기준으로 오른쪽 전체 시간표 업데이트
-        updateRightGridBySelection(test_EntireTimeTable_Array, test_EntireTimeTable_HowPeople, cols, rows, selectedCells);
+        updateRightGridBySelection(
+          test_EntireTimeTable_Array,
+          test_EntireTimeTable_HowPeople,
+          cols,
+          rows,
+          selectedCells
+        );
       }
 
       function formatTime(index) {
         const totalMinutes = index * 30 + 9 * 60;
         const hours = Math.floor(totalMinutes / 60);
         const minutes = totalMinutes % 60;
-        return String(hours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0');
+        return (
+          String(hours).padStart(2, "0") +
+          ":" +
+          String(minutes).padStart(2, "0")
+        );
       }
 
-      cells.forEach(cell => {
-        cell.addEventListener('mousedown', (e) => {
+      cells.forEach((cell) => {
+        cell.addEventListener("mousedown", (e) => {
           e.preventDefault();
           isDragging = true;
-          selectionMode = !cell.classList.contains('selected');
-          cell.classList.toggle('selected', selectionMode);
+          selectionMode = !cell.classList.contains("selected");
+          cell.classList.toggle("selected", selectionMode);
         });
-        cell.addEventListener('mouseover', () => {
-          if (isDragging) cell.classList.toggle('selected', selectionMode);
+        cell.addEventListener("mouseover", () => {
+          if (isDragging) cell.classList.toggle("selected", selectionMode);
         });
       });
-      document.addEventListener('mouseup', () => {
+      document.addEventListener("mouseup", () => {
         if (isDragging) {
           isDragging = false;
           generateSummary();
         }
       });
-      container.addEventListener('mouseleave', () => {
+      container.addEventListener("mouseleave", () => {
         if (isDragging) {
           isDragging = false;
           generateSummary();
@@ -366,9 +392,14 @@ export default function TimeSchedulerPage() {
       generateSummary();
     }
 
-
     // 드래그표 오른쪽 거_(팀원들 꺼 보는 곳) 생성 func
-    function setupGrid_right(dateData, rowCount, columnCount, test_EntireTimeTable_Array, test_EntireTimeTable_HowPeople) {
+    function setupGrid_right(
+      dateData,
+      rowCount,
+      columnCount,
+      test_EntireTimeTable_Array,
+      test_EntireTimeTable_HowPeople
+    ) {
       if (columnCount < 1 || columnCount > 7) {
         console.error("열 개수 1~7 범위 벗어남");
         return;
@@ -377,36 +408,44 @@ export default function TimeSchedulerPage() {
         console.error("행 개수 비정상");
         return;
       }
-      const container = document.getElementById('GRID_rightShow_GridContainer');
+      const container = document.getElementById("GRID_rightShow_GridContainer");
       if (!container) return;
-      container.innerHTML = '';
+      container.innerHTML = "";
 
       const cols = columnCount; // 날짜 개수 (<=7)
-      const rows = rowCount;    // 시간 슬롯 개수 (30분 단위)
+      const rows = rowCount; // 시간 슬롯 개수 (30분 단위)
 
       const totalCells = cols * rows;
-      container.style.display = 'grid';
+      container.style.display = "grid";
       const COLUMN_WIDTH_PX = 75;
       container.style.gridTemplateColumns = `repeat(${cols}, ${COLUMN_WIDTH_PX}px)`;
       const ROW_HEIGHT_PX = 30;
       container.style.gridTemplateRows = `repeat(${rows}, ${ROW_HEIGHT_PX}px)`;
 
       for (let i = 0; i < totalCells; i++) {
-        const cell = document.createElement('div');
-        cell.classList.add('grid_cell_right');
+        const cell = document.createElement("div");
+        cell.classList.add("grid_cell_right");
 
         const row = Math.floor(i / cols); // timeIndex (0 ~ rows-1)
-        const col = i % cols;             // dayIndex  (0 ~ cols-1)
+        const col = i % cols; // dayIndex  (0 ~ cols-1)
 
-        cell.style.border = 'none';
-        cell.style.borderLeft = '1px solid rgb(0, 0, 0)';
-        if (col === cols - 1) cell.style.borderRight = '1px solid rgb(0, 0, 0)';
-        if (row === 0) cell.style.borderTop = '1px solid rgb(0, 0, 0)';
-        else cell.style.borderTop = (row % 2 === 0) ? '1px solid rgb(0, 0, 0)' : '1px dashed rgb(0, 0, 0)';
+        cell.style.border = "none";
+        cell.style.borderLeft = "1px solid rgb(0, 0, 0)";
+        if (col === cols - 1) cell.style.borderRight = "1px solid rgb(0, 0, 0)";
+        if (row === 0) cell.style.borderTop = "1px solid rgb(0, 0, 0)";
+        else
+          cell.style.borderTop =
+            row % 2 === 0
+              ? "1px solid rgb(0, 0, 0)"
+              : "1px dashed rgb(0, 0, 0)";
 
         // 전체 시간표 == 투명도 로직
         let opacity = 0;
-        if (test_EntireTimeTable_Array && test_EntireTimeTable_HowPeople && test_EntireTimeTable_HowPeople > 0) {
+        if (
+          test_EntireTimeTable_Array &&
+          test_EntireTimeTable_HowPeople &&
+          test_EntireTimeTable_HowPeople > 0
+        ) {
           const dayIndex = col;
           const timeIndex = row;
           const count = test_EntireTimeTable_Array[dayIndex]?.[timeIndex] ?? 0;
@@ -417,7 +456,7 @@ export default function TimeSchedulerPage() {
           // #33A1E0 == rgb(51, 161, 224)
           cell.style.backgroundColor = `rgba(51, 161, 224, ${opacity})`;
         } else {
-          cell.style.backgroundColor = 'transparent';
+          cell.style.backgroundColor = "transparent";
         }
 
         container.appendChild(cell);
@@ -457,47 +496,61 @@ export default function TimeSchedulerPage() {
     //   }
     // }
 
-
     // ================================================================================
     // right_GRID를 드래그에 따라 업데이트 하는 함수
-    function updateRightGridBySelection(test_EntireTimeTable_Array, test_EntireTimeTable_HowPeople, cols, rows, selectedCells) {
-      const container = document.getElementById('GRID_rightShow_GridContainer');
-      if (!container || !test_EntireTimeTable_Array || !test_EntireTimeTable_HowPeople) return;
-      const rightCells = container.querySelectorAll('.grid_cell_right');
+    function updateRightGridBySelection(
+      test_EntireTimeTable_Array,
+      test_EntireTimeTable_HowPeople,
+      cols,
+      rows,
+      selectedCells
+    ) {
+      const container = document.getElementById("GRID_rightShow_GridContainer");
+      if (
+        !container ||
+        !test_EntireTimeTable_Array ||
+        !test_EntireTimeTable_HowPeople
+      )
+        return;
+      const rightCells = container.querySelectorAll(".grid_cell_right");
 
       rightCells.forEach((cell, index) => {
         const row = Math.floor(index / cols);
         const col = index % cols;
 
         const baseCount = test_EntireTimeTable_Array[col]?.[row] ?? 0;
-        const isSelected = selectedCells && selectedCells.has(`${col}-${row}`) ? 1 : 0;
+        const isSelected =
+          selectedCells && selectedCells.has(`${col}-${row}`) ? 1 : 0;
 
         const count = baseCount + isSelected;
-        const opacity = test_EntireTimeTable_HowPeople ? count / test_EntireTimeTable_HowPeople : 0;
+        const opacity = test_EntireTimeTable_HowPeople
+          ? count / test_EntireTimeTable_HowPeople
+          : 0;
 
         if (opacity > 0) {
           cell.style.backgroundColor = `rgba(51, 161, 224, ${opacity})`;
         } else {
-          cell.style.backgroundColor = 'transparent';
+          cell.style.backgroundColor = "transparent";
         }
       });
     }
 
-
     // 드래그 영역 기준, 왼쪽에 시간 text 띄우는 func
     function fillLeftTime(rowCount, startHour) {
       document.getElementById("box_leftTime").height = 30 * rowCount;
-      const left = document.getElementById('box_leftTime');
-      const right = document.getElementById('box_leftTime_rightShow');
+      const left = document.getElementById("box_leftTime");
+      const right = document.getElementById("box_leftTime_rightShow");
       const paint = (container) => {
         if (!container) return;
-        container.innerHTML = '';
+        container.innerHTML = "";
         for (let i = 0; i <= rowCount; i++) {
           const even = i % 2 === 0;
           const hour = (startHour + i / 2) % 24;
-          const div = document.createElement('div');
-          div.className = 'box_leftTime_mode';
-          div.textContent = even ? `${String(Math.floor(hour)).padStart(2, '0')}:00` : '';
+          const div = document.createElement("div");
+          div.className = "box_leftTime_mode";
+          div.textContent = even
+            ? `${String(Math.floor(hour)).padStart(2, "0")}:00`
+            : "";
           container.appendChild(div);
         }
       };
@@ -509,18 +562,18 @@ export default function TimeSchedulerPage() {
     function fillUpDay_2(containerId, startDateStr, dayCount) {
       const container = document.getElementById(containerId);
       if (!container) return;
-      container.innerHTML = '';
+      container.innerHTML = "";
 
-      const [Y, M, D] = startDateStr.split('-').map(Number);
+      const [Y, M, D] = startDateStr.split("-").map(Number);
       let cur = new Date(Y, M - 1, D);
-      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
       for (let i = 0; i < dayCount; i++) {
-        const cell = document.createElement('div');
-        cell.className = 'box_upDay_mode';
+        const cell = document.createElement("div");
+        cell.className = "box_upDay_mode";
         const yyyy = cur.getFullYear();
-        const mm = String(cur.getMonth() + 1).padStart(2, '0');
-        const dd = String(cur.getDate()).padStart(2, '0');
+        const mm = String(cur.getMonth() + 1).padStart(2, "0");
+        const dd = String(cur.getDate()).padStart(2, "0");
         const ddd = dayNames[cur.getDay()];
         cell.innerHTML = `${yyyy}.${mm}.${dd}<br>${ddd}`;
         container.appendChild(cell);
@@ -528,8 +581,8 @@ export default function TimeSchedulerPage() {
       }
     }
     function fillUpDay(x, y) {
-      fillUpDay_2('box_upDay', x, y);
-      fillUpDay_2('box_upDay_rightShow', x, y);
+      fillUpDay_2("box_upDay", x, y);
+      fillUpDay_2("box_upDay_rightShow", x, y);
     }
 
     // 드래그 그리드표 만드는 func
@@ -545,10 +598,22 @@ export default function TimeSchedulerPage() {
       const cols = how_dateLong_int;
 
       // 생성 = left_GRID
-      setupGrid_left(when_dateStart, rows, cols, test_EntireTimeTable_Array, test_EntireTimeTable_HowPeople);
+      setupGrid_left(
+        when_dateStart,
+        rows,
+        cols,
+        test_EntireTimeTable_Array,
+        test_EntireTimeTable_HowPeople
+      );
 
       // 생성 = right_GIRD
-      setupGrid_right(when_dateStart, rows, cols, test_EntireTimeTable_Array, test_EntireTimeTable_HowPeople);
+      setupGrid_right(
+        when_dateStart,
+        rows,
+        cols,
+        test_EntireTimeTable_Array,
+        test_EntireTimeTable_HowPeople
+      );
 
       // 생성 = 시간 & 요일 표
       fillLeftTime(rows, when_timeStart);
@@ -564,9 +629,6 @@ export default function TimeSchedulerPage() {
     //   fillUpDay(when_dateStart, cols);
     // }
   }, []);
-
-
-
 
   // ================================================================
   // 여기부터 기존 html 코드
@@ -585,21 +647,24 @@ export default function TimeSchedulerPage() {
         </div>
       </header> */}
 
-
       {/* 0번: 시간조율 표생성 */}
       <div className="TimeSelect_make">
-
         {/* 가로배치를 위한 컨테이너 */}
         <div className="container_TimeSelect_Garo">
-
           {/* 왼쪽 == 입력창 */}
           <div className="container_TimeSelect_Sero">
-            <h1 id="TimeSelect_make_title"><b>시간조율표 생성</b></h1>
-
+            <h1 id="TimeSelect_make_title">
+              <b>시간조율표 생성</b>
+            </h1>
 
             {/* 1. 시작 날짜 */}
             <div className="TimeSelect_make_item">
-              <label htmlFor="TimeSelect_howdate" className="TimeSelect_make_label">시작 날짜 입력</label>
+              <label
+                htmlFor="TimeSelect_howdate"
+                className="TimeSelect_make_label"
+              >
+                시작 날짜 입력
+              </label>
               <input
                 type="date"
                 id="TimeSelect_howdate"
@@ -611,7 +676,9 @@ export default function TimeSchedulerPage() {
 
             {/* 2. 며칠치 생성? */}
             <div className="TimeSelect_make_item">
-              <label htmlFor="list_howdate" className="TimeSelect_make_label">생성 개수 선택</label>
+              <label htmlFor="list_howdate" className="TimeSelect_make_label">
+                생성 개수 선택
+              </label>
               <select
                 name="numbers"
                 id="list_howdate"
@@ -632,7 +699,12 @@ export default function TimeSchedulerPage() {
 
             {/* 3. 시간대 (시작) */}
             <div className="TimeSelect_make_item">
-              <label htmlFor="TimeSelect_timestart" className="TimeSelect_make_label">시작 시간대</label>
+              <label
+                htmlFor="TimeSelect_timestart"
+                className="TimeSelect_make_label"
+              >
+                시작 시간대
+              </label>
               <input
                 type="time"
                 id="TimeSelect_timestart"
@@ -648,7 +720,12 @@ export default function TimeSchedulerPage() {
 
             {/* 4. 시간대 (종료) */}
             <div className="TimeSelect_make_item">
-              <label htmlFor="TimeSelect_timeend" className="TimeSelect_make_label">종료 시간대</label>
+              <label
+                htmlFor="TimeSelect_timeend"
+                className="TimeSelect_make_label"
+              >
+                종료 시간대
+              </label>
               <input
                 type="time"
                 id="TimeSelect_timeend"
@@ -664,31 +741,38 @@ export default function TimeSchedulerPage() {
 
             {/* 5. 시간조율표 이름 */}
             <div className="TimeSelect_make_item">
-              <label htmlFor="TimeSelect_nametable" className="TimeSelect_make_label">조율표 이름</label>
+              <label
+                htmlFor="TimeSelect_nametable"
+                className="TimeSelect_make_label"
+              >
+                조율표 이름
+              </label>
               <input
                 type="text"
                 id="TimeSelect_nametable"
                 value={whatName}
                 onChange={onChangeWhatName}
                 placeholder="이름 입력"
-                required></input>
+                required
+              ></input>
             </div>
 
             {/* 6. 생성 버튼 */}
             <div className="TimeSelect_make_buttoncontainer">
-              <button id="TimeSelect_make_button" type="button" onClick={onMakeClick}>생성</button>
+              <button
+                id="TimeSelect_make_button"
+                type="button"
+                onClick={onMakeClick}
+              >
+                생성
+              </button>
             </div>
           </div>
 
-
-
-
           {/* 오른쪽 == 시간조율표 리스트 */}
           <div className="container_TimeSelect_Sero">
-
             {/* 7. 시간표 리스트 */}
             <div className="TimeSelect_made_list">
-
               {/* 테스트 데이터 */}
               {test_item.map((item) => (
                 <div
@@ -700,7 +784,9 @@ export default function TimeSchedulerPage() {
                   data-time-end={item.timeEndHour}
                   onClick={() => onItemClick(item)}
                 >
-                  <span className="TimeSelect_item_title">{item.createdLabel}</span>
+                  <span className="TimeSelect_item_title">
+                    {item.createdLabel}
+                  </span>
                 </div>
               ))}
 
@@ -715,14 +801,15 @@ export default function TimeSchedulerPage() {
                   data-time-end={item.timeEndHour}
                   onClick={() => onItemClick(item)}
                 >
-                  <span className="TimeSelect_item_title">{item.createdLabel}</span>
+                  <span className="TimeSelect_item_title">
+                    {item.createdLabel}
+                  </span>
                 </div>
               ))}
             </div>
           </div>
         </div>
       </div>
-
 
       {/* 1번: 시간조율 기능 */}
       <div className="TimeSelect">
@@ -731,20 +818,24 @@ export default function TimeSchedulerPage() {
           id="exit_TimeSelect"
           type="button"
           onClick={() => {
-            window.swtich_list[0].classList.remove('off');
-            window.swtich_list[1].classList.remove('on');
+            window.swtich_list[0].classList.remove("off");
+            window.swtich_list[1].classList.remove("on");
           }}
         >
           <p> 뒤로가기</p>
         </button>
         <div id="GRID_leftSelect">
-          <label id="GRID_leftSelect_label"><b>개인 시간표</b></label>
+          <label id="GRID_leftSelect_label">
+            <b>개인 시간표</b>
+          </label>
           <div id="GRID_leftSelect_GridContainer"></div>
           <div id="box_upDay"></div>
           <div id="box_leftTime"></div>
         </div>
         <div id="GRID_rightShow">
-          <label id="GRID_rightShow_label"><b>전체 시간표</b></label>
+          <label id="GRID_rightShow_label">
+            <b>전체 시간표</b>
+          </label>
           <div id="GRID_rightShow_GridContainer"></div>
           <div id="box_upDay_rightShow"></div>
           <div id="box_leftTime_rightShow"></div>
@@ -754,6 +845,6 @@ export default function TimeSchedulerPage() {
 
         {/* <div id="box_rightResult"></div> */}
       </div>
-    </div >
+    </div>
   );
 }
