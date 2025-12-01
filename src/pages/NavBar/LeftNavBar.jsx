@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 import "./NavBar.css";
 import { useState, useEffect } from "react";
 
+const api_url = import.meta.env.VITE_API_KEY;
+
 const LeftNavBar = () => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,7 +16,7 @@ const LeftNavBar = () => {
       try {
         const token = localStorage.getItem("token");
 
-        const response = await fetch(`/api/projects/me`, {
+        const response = await fetch(`${api_url}/api/projects/me`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -26,7 +28,15 @@ const LeftNavBar = () => {
           const data = await response.json();
           setProjects(data);
         } else {
-          setError("프로젝트를 불러오는 데 실패했습니다.");
+          const errorText = await response.text();
+          console.error(
+            "HTTP Status:",
+            response.status,
+            "Error Body:",
+            errorText
+          );
+
+          setError(`프로젝트 로드 실패 (HTTP ${response.status})`);
         }
 
         setLoading(false);
@@ -53,19 +63,21 @@ const LeftNavBar = () => {
   }
 
   if (error) {
-    <div>
-      {/* 사이드바 */}
-      <div className="NavBar-left">
-        <div className="ProjectListContainer">
-          <h2 className="projectTitle">프로젝트</h2>
-          <div className="projectList">에러 : {error}</div>
+    return (
+      <div>
+        {/* 사이드바 */}
+        <div className="NavBar-left">
+          <div className="ProjectListContainer">
+            <h2 className="projectTitle">프로젝트</h2>
+            <div className="projectList">에러 : {error}</div>
+          </div>
         </div>
       </div>
-    </div>;
+    );
   }
 
   const projectList = projects.map((project) => (
-    <div key={project.projectId} className="Project-item">
+    <div key={project.projectPk} className="Project-item">
       <Link to={`/project/${project.projectPk}`} className="ProjectButton">
         <div className="projectSelect"></div>
         <div className="ProjectText">{project.projectName}</div>
