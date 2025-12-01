@@ -2,6 +2,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import "./NavBar.css";
+import { useState, useEffect } from "react";
 
 const LeftNavBar = () => {
   const [projects, setProjects] = useState([]);
