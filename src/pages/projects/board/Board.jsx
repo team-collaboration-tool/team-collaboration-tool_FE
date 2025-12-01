@@ -5,7 +5,7 @@
 // 도메인 주소
 // http://hyupmin.ap-northeast-2.elasticbeanstalk.com/
 
-import "./css/csSogong_Board.css";
+import "../schedule/css/csSogong_Board.css";
 import React from "react";
 
 // baseURL import
