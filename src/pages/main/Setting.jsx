@@ -109,7 +109,7 @@ const Setting = () => {
 
       if (profileChanged) {
         const profileResponse = await fetch(`${API_URL}/api/users/update`, {
-          method: "PUT",
+          method: "PATCH",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
