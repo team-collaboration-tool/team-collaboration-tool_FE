@@ -65,11 +65,8 @@ const LeftNavBar = () => {
   }
 
   const projectList = projects.map((project) => (
-    <div key={project.projectPk} className="Project-item">
-      <Link
-        to={`/project/${project.projectPk}/dashboard`}
-        className="ProjectButton"
-      >
+    <div key={project.projectId} className="Project-item">
+      <Link to={`/project/${project.projectPk}`} className="ProjectButton">
         <div className="projectSelect"></div>
         <div className="ProjectText">{project.projectName}</div>
       </Link>
