@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import "./NavBar.css";
 import { useState, useEffect } from "react";
 
-const api_url = import.meta.env.VITE_API_KEY;
+const api_url = import.meta.env.VITE_DEV_PROXY_URL;
 
 const LeftNavBar = () => {
   const [projects, setProjects] = useState([]);
