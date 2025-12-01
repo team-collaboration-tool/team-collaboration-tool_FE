@@ -14,7 +14,8 @@ import CautionIcon from "../../../asset/project_setting_icon/caution.svg";
 const API_URL = import.meta.env.VITE_DEV_PROXY_URL;
 
 const ProjectSetting = () => {
-  const { projectId } = useParams();
+  const { projectID } = useParams();
+  const projectId = projectID;
   const [projectData, setProjectData] = useState(null);
   const [isEditingName, setIsEditingName] = useState(false);
   const [newProjectName, setNewProjectName] = useState("");
@@ -34,8 +35,17 @@ const ProjectSetting = () => {
       });
       if (response.ok) {
         const data = await response.json();
-        setProjectData(data);
-        setNewProjectName(data.name);
+        // API 응답 필드를 컴포넌트에서 사용하는 필드명으로 매핑
+        const mappedData = {
+          ...data,
+          name: data.projectName,
+          members: data.members || [],
+        };
+        setProjectData(prev => ({
+          ...prev,
+          ...mappedData,
+        }));
+        setNewProjectName(mappedData.name || "");
       }
     } catch (error) {
       console.error("프로젝트 정보 로딩 실패:", error);
@@ -62,8 +72,10 @@ const ProjectSetting = () => {
   };
 
   useEffect(() => {
-    fetchProjectData();
-    fetchJoinRequests();
+    if (projectId) {
+      fetchProjectData();
+      fetchJoinRequests();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
 
@@ -76,7 +88,7 @@ const ProjectSetting = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify({ name: newProjectName }),
+        body: JSON.stringify({ projectName: newProjectName }),
       });
       if (response.ok) {
         setIsEditingName(false);
@@ -96,6 +108,7 @@ const ProjectSetting = () => {
         {
           method: "POST",
           headers: {
+            "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
@@ -118,6 +131,7 @@ const ProjectSetting = () => {
         {
           method: "POST",
           headers: {
+            "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
@@ -137,7 +151,7 @@ const ProjectSetting = () => {
       const response = await fetch(
         `${API_URL}/api/projects/${projectId}/transfer/${targetUserPk}`,
         {
-          method: "POST",
+          method: "PUT",
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
@@ -152,14 +166,15 @@ const ProjectSetting = () => {
     }
   };
 
-  // 멤버 내보내기 (실제로는 거절 API 사용)
+  // 멤버 내보내기
   const handleKickMember = async (projectUserPk) => {
     try {
       const response = await fetch(
-        `${API_URL}/api/projects/${projectId}/reject/${projectUserPk}`,
+        `${API_URL}/api/projects/${projectId}/expel/${projectUserPk}`,
         {
           method: "POST",
           headers: {
+            "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
@@ -179,6 +194,7 @@ const ProjectSetting = () => {
       const response = await fetch(`${API_URL}/api/projects/${projectId}/leave`, {
         method: "DELETE",
         headers: {
+          "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
@@ -192,7 +208,7 @@ const ProjectSetting = () => {
   };
 
   // 프로젝트 삭제
-  const handleDeleteProject = async () => {
+  const handleDeleteProject = async (inputProjectName) => {
     const approvedMembers = projectData.members.filter(
       (m) => m.status === "APPROVED" && m.role !== "OWNER"
     );
@@ -206,8 +222,10 @@ const ProjectSetting = () => {
       const response = await fetch(`${API_URL}/api/projects/${projectId}`, {
         method: "DELETE",
         headers: {
+          "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
+        body: JSON.stringify({ projectName: inputProjectName }),
       });
       if (response.ok) {
         alert("프로젝트가 삭제되었습니다.");
@@ -322,11 +340,11 @@ const ProjectSetting = () => {
               <div key={member.userPk} className="ps-member-item">
                 <div className="ps-member-info">
                   <div className="ps-member-avatar">
-                    {member.memberName.charAt(0)}
+                    {(member.name || member.memberName || "?").charAt(0)}
                   </div>
                   <div className="ps-member-details">
                     <span className="ps-member-name">
-                      {member.memberName}
+                      {member.name || member.memberName}
                       {` (${member.email || "email@email.com"})`}
                     </span>
                   </div>
@@ -358,15 +376,15 @@ const ProjectSetting = () => {
             <h2 className="ps-section-title">승인 대기 멤버</h2>
             <div className="ps-member-list">
               {pendingMembers.map((member) => (
-                <div key={member.userPk} className="ps-member-item">
+                <div key={member.projectUserPk} className="ps-member-item">
                   <div className="ps-member-info">
                     <div className="ps-member-avatar">
-                      {member.memberName.charAt(0)}
+                      {(member.requesterName || member.name || "?").charAt(0)}
                     </div>
                     <div className="ps-member-details">
                       <span className="ps-member-name">
-                        {member.memberName}
-                        {` (${member.email || "email@email.com"})`}
+                        {member.requesterName || member.name}
+                        {` (${member.requesterEmail || member.email || "email@email.com"})`}
                       </span>
                     </div>
                   </div>
@@ -375,13 +393,13 @@ const ProjectSetting = () => {
                       src={CheckCircleIcon}
                       alt="승인"
                       className="ps-action-icon ps-approve"
-                      onClick={() => handleApproveRequest(member.userPk)}
+                      onClick={() => handleApproveRequest(member.projectUserPk)}
                     />
                     <img
                       src={DeleteIcon}
                       alt="거절"
                       className="ps-action-icon"
-                      onClick={() => handleRejectRequest(member.userPk)}
+                      onClick={() => handleRejectRequest(member.projectUserPk)}
                     />
                   </div>
                 </div>

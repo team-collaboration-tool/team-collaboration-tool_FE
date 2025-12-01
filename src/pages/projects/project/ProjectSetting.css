@@ -22,7 +22,7 @@
   color: #888;
 }
 
-/* 헤더 - 프로젝트 이름 */
+/* 프로젝트 이름 */
 .ps-header {
   margin-bottom: 32px;
   display: flex;
@@ -225,19 +225,6 @@
   box-sizing: border-box;
 }
 
-@media (max-width: 900px) {
-  .ps-member-list {
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  }
-}
-
-@media (max-width: 600px) {
-  .ps-member-list {
-    grid-template-columns: 1fr;
-    max-height: 400px;
-  }
-}
-
 .ps-member-item:hover {
   background: #f0f0f0;
 }
@@ -342,25 +329,4 @@
 
 .ps-leave-btn:hover {
   background: #d0d0d0;
-}
-
-@media (max-width: 768px) {
-  .ps-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .ps-header-actions {
-    align-items: flex-start;
-  }
-
-  .ps-action-note {
-    text-align: left;
-  }
-
-  .ps-delete-btn,
-  .ps-leave-btn {
-    width: 100%;
-    justify-content: center;
-  }
 }
