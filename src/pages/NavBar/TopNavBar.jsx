@@ -6,13 +6,16 @@ import logoutIcon from "../../asset/Icon/logoutIcon.svg";
 import settingIcon from "../../asset/Icon/settingIcon.svg";
 import logo from "../../asset/HYUPMIN_logo.svg";
 
+const API_URL = import.meta.env.VITE_DEV_PROXY_URL;
+
 const NavBar = () => {
+  const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const [projectCode, setProjectCode] = useState("");
 
   const handleCreateProject = async () => {
     try {
-      const response = await fetch("/api/projects", {
+      const response = await fetch(`${API_URL}/api/projects`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -28,7 +31,7 @@ const NavBar = () => {
       }
 
       const data = await response.json();
-      const newProjectId = data.projectId;
+      const newProjectId = data.projectPk;
 
       navigate(`/project/${newProjectId}/setting`);
     } catch (error) {
@@ -44,14 +47,12 @@ const NavBar = () => {
     }
 
     try {
-      const response = await fetch(`/api/projects/join-request`, {
+      const response = await fetch(`${API_URL}/api/projects/join-request?code=${projectCode}`, {
         method: "POST",
         headers: {
-          "Content-Type": "applicatoin/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          projectCode: projectCode,
-        }),
       });
 
       if (!response.ok) {
