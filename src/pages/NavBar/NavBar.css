@@ -1,0 +1,572 @@
+/* NavBar.css */
+
+/* 상단바 (Top) */
+.NavBar-top {
+  width: 100%;
+  height: 70px;
+  left: 260px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1001;
+  background-color: #ffffff;
+  border-bottom: 2px solid #dee2e6;
+  box-sizing: border-box;
+}
+
+.TopContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  padding-left: 20px;
+}
+
+.logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 70px;
+  margin-bottom: 0px;
+  padding-top: 11px;
+  padding-bottom: 6.5px;
+  padding-left: 25px;
+  padding-right: 33px;
+  border-right: 2px solid #dee2e6;
+}
+
+.logoImg {
+  width: 180px;
+  height: auto;
+  cursor: pointer;
+}
+
+.SearchContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 10px;
+  padding-left: 20px;
+  padding-right: 20px;
+  flex: 1;
+  min-width: 0;
+}
+
+.SearchBar {
+  flex: 1;
+  min-width: 200px;
+  height: 45px;
+  padding: 0 15px;
+  border: 1px solid #ced4da;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.SearchBar:focus {
+  border-color: #33a1e0;
+}
+
+.SearchBar::placeholder {
+  color: #adb5bd;
+}
+
+.SearchButton {
+  background-color: #33a1e0;
+  color: #ffffff;
+  min-width: 140px;
+  height: 45px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.SearchButton:hover {
+  background-color: #2b8bc7;
+}
+
+.profile {
+  width: 150px;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding: 0;
+  border-left: 2px solid #dee2e6;
+  transition: background-color 0.2s;
+}
+
+.UserName {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background-color: #d9d9d9;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 20px;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+}
+
+.fullname {
+  font-size: 16.5px;
+  color: #495057;
+  font-weight: 600;
+}
+
+.Buttons {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 0;
+  padding: 0;
+  height: 100%;
+}
+
+.LogoutButton {
+  width: 70px;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  border-left: 2px solid #dee2e6;
+  transition: background-color 0.2s;
+}
+
+.SettingButton {
+  width: 70px;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  border-left: 2px solid #dee2e6;
+  transition: background-color 0.2s;
+}
+
+.LogoutButton:hover {
+  background-color: #f76666;
+}
+
+.SettingButton:hover {
+  background-color: #5cb4e6;
+}
+
+.LogoutIcon,
+.SettingIcon {
+  width: 25px;
+  height: 25px;
+}
+
+/* 사이드바 (Left) */
+.NavBar-left {
+  width: 260px;
+  height: calc(100vh - 60px);
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background-color: #ffffff;
+  border-right: 2px solid #dee2e6;
+  position: fixed;
+  top: 70px;
+  left: 0;
+  z-index: 1000;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.projectTitle {
+  padding: 0px 1.5rem;
+  text-align: start;
+  font-size: 22px;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: 15px;
+}
+
+.ProjectListContainer {
+  width: 100%;
+  margin-top: 20px;
+}
+
+.ProjectListTitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: #868e96;
+  margin-bottom: 15px;
+  padding-left: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.projectSelect {
+  width: 12px;
+  height: 12px;
+  background-color: transparent;
+  border: none;
+  border-radius: 100px;
+  flex-shrink: 0;
+}
+
+.projectSelect:hover {
+  background-color: #33a1e0;
+}
+
+.projectList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  padding: 0px 1.5rem;
+}
+
+.Project-item {
+  width: 100%;
+}
+
+.ProjectButton {
+  width: 100%;
+  padding: 3px 5px;
+  border-radius: 8px;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: row;
+  text-align: start;
+  align-items: center;
+  gap: 15px;
+  background-color: transparent;
+  text-decoration: none;
+}
+
+.ProjectButton:hover .projectSelect {
+  background-color: #33a1e0;
+}
+
+.ProjectButton.active .projectSelect {
+  background-color: #e7f5ff;
+}
+
+.ProjectText {
+  font-size: 15px;
+  color: #495057;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.ProjectButton:hover .ProjectText {
+  color: #33a1e0;
+}
+
+.scheduleTitle {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 30px;
+}
+
+.selectedDate {
+  font-size: 21px;
+  font-weight: 600;
+}
+
+.addSchedule {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  width: 95px;
+  height: 35px;
+  background-color: #4d80e4;
+  border-radius: 5px;
+  color: #ffffff;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: brakcground-color 0.2s;
+}
+
+.addSchedule:hover {
+  background-color: #3b6edc;
+}
+
+.ScheduleContent {
+  margin-top: 15px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.DailySchedules {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.Schedule-item {
+  margin-left: 15px;
+  margin-right: 15px;
+  display: flex;
+  align-items: center;
+  padding: 0px 10px;
+  background-color: #ffffff;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+}
+
+.colorTag {
+  width: 13px;
+  height: 35px;
+  background-color: #ced4da;
+  margin-right: 10px;
+}
+
+.ScheduleText {
+  font-size: 14px;
+  font-weight: 600;
+  color: #495057;
+}
+
+.scheduleButtons {
+  display: flex;
+  flex-direction: row;
+  justify-content: end;
+  gap: 5px;
+  margin-left: auto;
+}
+
+.iconButton {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+/* 하단바 (Bottom) */
+.NavBar-bottom {
+  width: 100%;
+  height: 60px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background-color: #ffffff;
+  border-top: 2px solid #dee2e6;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  z-index: 1000;
+  box-sizing: border-box;
+}
+
+.bottom {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+}
+
+.ProjectName {
+  width: 260px;
+  border-right: 2px solid #dee2e6;
+  padding: 16px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #fafafa;
+  background-color: #33a1e0;
+  transition: color 0.2s;
+  cursor: pointer;
+}
+
+.ProjectName:hover {
+  background-color: #2b8bc7;
+  cursor: pointer;
+}
+
+.ProjectName.disabled {
+  background-color: #adb5bd;
+  cursor: not-allowed;
+}
+
+.ProjectName.disabled:hover {
+  background-color: #adb5bd;
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1500;
+}
+
+.projectModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 260px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-top: 15px;
+  background-color: #ffffff;
+  border-right: 2px solid #dee2e6;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+  z-index: 1500;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.projectModalHeader h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #33a1e0;
+}
+
+.modalCloseBtn {
+  width: 100%;
+  height: 60px;
+  background: none;
+  border: none;
+  padding: 16px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #fafafa;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.2s;
+  border-top: 2px solid #dee2e6;
+  background-color: #33a1e0;
+  cursor: pointer;
+}
+
+.modalCloseBtn:hover {
+  background-color: #e9ecef;
+  color: #495057;
+}
+
+.projectModalContent {
+  padding: 20px;
+}
+
+.projectInfoItem {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.projectInfoItem:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.infoLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #868e96;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.infoValue {
+  font-size: 16px;
+  font-weight: 500;
+  color: #495057;
+}
+
+.button {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  width: 100%;
+}
+
+.Pages {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 110px;
+}
+
+.Function-item {
+  display: flex;
+  align-items: center;
+}
+
+.FunctionButton {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  text-decoration: none;
+  transition: all 0.2s;
+  border-radius: 8px;
+}
+
+.FunctionButton:hover {
+  background-color: #f1f3f5;
+}
+
+.FunctionButton.active {
+  background-color: #e7f5ff;
+}
+
+.FunctionIcon {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.FunctionText {
+  font-size: 16px;
+  font-weight: 600;
+  color: #495057;
+  margin: 0;
+  transition: color 0.2s;
+}
+
+.FunctionButton:hover .FunctionText {
+  color: #33a1e0;
+}
+
+.FunctionButton.active .FunctionText {
+  color: #33a1e0;
+  font-weight: 600;
+}
