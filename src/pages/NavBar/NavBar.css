@@ -279,6 +279,93 @@
   color: #33a1e0;
 }
 
+.scheduleTitle {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 30px;
+}
+
+.selectedDate {
+  font-size: 21px;
+  font-weight: 600;
+}
+
+.addSchedule {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  width: 95px;
+  height: 35px;
+  background-color: #4d80e4;
+  border-radius: 5px;
+  color: #ffffff;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: brakcground-color 0.2s;
+}
+
+.addSchedule:hover {
+  background-color: #3b6edc;
+}
+
+.ScheduleContent {
+  margin-top: 15px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.DailySchedules {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.Schedule-item {
+  margin-left: 15px;
+  margin-right: 15px;
+  display: flex;
+  align-items: center;
+  padding: 0px 10px;
+  background-color: #ffffff;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+}
+
+.colorTag {
+  width: 13px;
+  height: 35px;
+  background-color: #ced4da;
+  margin-right: 10px;
+}
+
+.ScheduleText {
+  font-size: 14px;
+  font-weight: 600;
+  color: #495057;
+}
+
+.scheduleButtons {
+  display: flex;
+  flex-direction: row;
+  justify-content: end;
+  gap: 5px;
+  margin-left: auto;
+}
+
+.iconButton {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
 /* 하단바 (Bottom) */
 .NavBar-bottom {
   width: 100%;
@@ -314,12 +401,17 @@
 }
 
 .ProjectName:hover {
-  background-color: not-allowed;
+  background-color: #2b8bc7;
+  cursor: pointer;
+}
+
+.ProjectName.disabled {
+  background-color: #adb5bd;
   cursor: not-allowed;
 }
 
 .ProjectName.disabled:hover {
-  background-color: #2b8bc7;
+  background-color: #adb5bd;
 }
 
 .modalOverlay {

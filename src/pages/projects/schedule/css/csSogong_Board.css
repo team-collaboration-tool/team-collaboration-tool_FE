@@ -1,3 +1,4 @@
+/* ========================================================================= */
 /* 2번: 게시판 나열 */
 .GaeSiPan_list {
     display: block;
@@ -5,7 +6,7 @@
     position: absolute;
     transform: translate(-50%, 0%);
     left: 50%;
-    top: 125px;
+    top: 70px;
     width: 1600px;
     height: 800px;
     border: 2px solid black;
@@ -15,7 +16,6 @@
 
     overflow: hidden;
     box-sizing: border-box;
-    margin: 0;
     padding: 20px;
 }
 /* .GaeSiPan_list.on {
@@ -178,6 +178,52 @@
     flex-direction: row;
 }
 
+.GSP_search_container {
+    position: absolute;
+    right: 100px;
+    bottom: 20px;
+
+    display: flex;
+    flex-direction: row;
+}
+
+#GSP_search_box {
+    /* position: absolute;
+    right: 175px;
+    bottom: 25px; */
+    width: 250px;
+    height: 37.5px; 
+
+    display: flex;
+    border: 1px solid rgb(0, 0, 0);
+    border-radius: 0.5rem;
+    background-color: rgb(255, 255, 255);
+    color: rgb(0, 0, 0);
+
+    margin: 10px;
+    padding-left: 12.5px;
+}
+#GSP_search_button {
+    /* position: absolute;
+    right: 100px;
+    bottom: 30px; */
+    width: 50px;
+    height: 37.5px;
+
+    display: flex;
+    border-radius: 0.5rem;
+    background-color: #33A1E0;
+    color: rgb(255, 255, 255);
+
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin: 10px;
+}
+
+
 /* .GSP_page_leftmode {
     position: absolute;
     left: 0;
@@ -232,19 +278,18 @@
 
 
 
-
+/* ========================================================================= */
 /* 3번: 게시글 작성 */
 .GaeSiPan_Write {
     display: none;
-    margin: 2rem auto;
     padding: 2rem;
 
     position: absolute;
     transform: translate(-50%, 0);
     left: 50%;
-    top: 200px;
-    width: 1200px;
-    height: 600px;
+    top: 70px;
+    width: 1600px;
+    height: 800px;
     border: 2px solid black;
     border-radius: 12px;
     background-color: white;
@@ -289,6 +334,18 @@
 
 .GSPW_field {
     margin-bottom: 1rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.GSPW_field_left {
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: left;
 }
 
 .form_label {
@@ -296,7 +353,8 @@
     font-size: 0.875rem;
     font-weight: 500;
     color: #374151;
-    margin-bottom: 0.25rem;
+    margin: 1rem;
+    white-space: nowrap;
 }
 
 .form_input,
@@ -322,15 +380,16 @@
 
 .checkbox_container {
     display: flex;
-    align-items: center;
+    align-self: center;
 }
 
 .checkbox_label {
     margin-left: 0.5rem;
+    margin-right: 2rem;
     display: block;
     font-size: 0.875rem;
     color: #111827;
-    user-select: none;
+    user-select: none; 
 }
 
 .form_file_input::-webkit-file-upload-button {
@@ -443,28 +502,28 @@
 
 
 
-
+/* ========================================================================= */
 /* 6번: 게시글 보기 */
 .GaeSiPan_See {
-    /* display: none; */
-    margin: 2rem auto;
+    display: none;
+    /* margin: 2rem auto; */
     padding: 2rem;
 
     position: absolute;
     transform: translate(-50%, 0);
     left: 50%;
-    top: 1000px;
+    top: 70px;
     width: 1600px;
+    height: 800px;
     border: 2px solid black;
     border-radius: 12px;
     background-color: white;
 
     z-index: 3;
 }
-
-/* .GaeSiPan_See.on {
+.GaeSiPan_See.on {
     display: block;
-} */
+}
 
 /* 작성 페이지 나가기 버튼 */
 #exit_See {
@@ -592,12 +651,7 @@
 
 
 
-
-
-
-
-
-
+/* ========================================================================= */
 /* 7-2 번: 투표하는 화면 */
 .VOTE_container {
     display: flex;
@@ -613,6 +667,9 @@
     border: 1px solid rgb(0, 0, 0);
     border-radius: 4px;
     padding: 20px;
+}
+.VOTE_Page.off {
+    display: none;
 }
 
 #VOTE_title {
@@ -656,7 +713,7 @@
 
 
 
-
+/* ========================================================================= */
 /* 7-3 번: 투표 결과 화면 */
 .VOTE_Result {
     display: none;
@@ -752,6 +809,7 @@
 
 
 
+/* ========================================================================= */
 /* 7-1 번: 투표 생성 */
 .VOTE_Make {
     position: absolute;

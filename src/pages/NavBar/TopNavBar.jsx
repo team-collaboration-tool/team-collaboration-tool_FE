@@ -1,18 +1,49 @@
 // TopNavBar.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./NavBar.css";
 import { Link, useNavigate } from "react-router-dom";
 import logoutIcon from "../../asset/Icon/logoutIcon.svg";
 import settingIcon from "../../asset/Icon/settingIcon.svg";
 import logo from "../../asset/HYUPMIN_logo.svg";
 
+const API_URL = import.meta.env.VITE_DEV_PROXY_URL;
+
 const NavBar = () => {
+  const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const [projectCode, setProjectCode] = useState("");
+  const [userName, setUserName] = useState("");
+  const [fullName, setFullName] = useState("");
+
+  // 사용자 정보 가져오기
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/users/me`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setFullName(data.name || "");
+          setUserName(data.name ? data.name.charAt(0) : "");
+        }
+      } catch (error) {
+        console.error("사용자 정보 로딩 실패:", error);
+      }
+    };
+
+    if (token) {
+      fetchUserInfo();
+    }
+  }, [token]);
 
   const handleCreateProject = async () => {
     try {
-      const response = await fetch("/api/projects", {
+      const response = await fetch(`${API_URL}/api/projects`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -28,7 +59,7 @@ const NavBar = () => {
       }
 
       const data = await response.json();
-      const newProjectId = data.projectId;
+      const newProjectId = data.projectPk;
 
       navigate(`/project/${newProjectId}/setting`);
     } catch (error) {
@@ -44,14 +75,12 @@ const NavBar = () => {
     }
 
     try {
-      const response = await fetch(`/api/projects/join-request`, {
+      const response = await fetch(`${API_URL}/api/projects/join-request?code=${projectCode}`, {
         method: "POST",
         headers: {
-          "Content-Type": "applicatoin/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          projectCode: projectCode,
-        }),
       });
 
       if (!response.ok) {
@@ -71,6 +100,11 @@ const NavBar = () => {
 
   const handleSetting = () => {
     navigate("/setting");
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/");
   };
 
   return (
@@ -101,11 +135,11 @@ const NavBar = () => {
             </button>
           </div>
           <div className="profile" to="/profile">
-            <div className="UserName">홍</div>
-            <div className="fullname">홍길동</div>
+            <div className="UserName">{userName || "사"}</div>
+            <div className="fullname">{fullName || "사용자"}</div>
           </div>
           <div className="Buttons">
-            <div className="LogoutButton">
+            <div className="LogoutButton" onClick={handleLogout}>
               <img src={logoutIcon} className="LogoutIcon" alt="logout" />
             </div>
             <div className="SettingButton" onClick={handleSetting}>

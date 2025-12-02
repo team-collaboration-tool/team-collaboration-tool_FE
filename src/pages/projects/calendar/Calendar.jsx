@@ -2,8 +2,11 @@ import React, { useState } from "react";
 import "./Calendar.css";
 import leftIcon from "../../../asset/Icon/leftChevron.svg";
 import rightIcon from "../../../asset/Icon/rightChevron.svg";
+import { useNavigate, useParams } from "react-router-dom";
 
 const Calendar = () => {
+  const navigate = useNavigate();
+  const { projectID } = useParams();
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const year = currentDate.getFullYear();
@@ -52,6 +55,11 @@ const Calendar = () => {
     );
   };
 
+  const handleDateClick = (day) => {
+    const dateString = day.toISOString().split("T")[0];
+    navigate(`/project/${projectID}/calendar?selectedDate=${dateString}`);
+  };
+
   return (
     <div className="Calendar-container">
       <div className="Month-container">
@@ -81,6 +89,7 @@ const Calendar = () => {
                 className={`calendar-day-cell ${
                   day.getMonth() !== month ? "prev-next-month" : ""
                 }`}
+                onClick={() => handleDateClick(day)}
               >
                 <div className="calendar-date">{day.getDate()}</div>
                 <div className="date"></div>

@@ -2,8 +2,16 @@
 // 시작 == npm run dev
 // 종료 == ctrl + C
 
-import "./css/csSogong_Board.css";
+// 도메인 주소
+// http://hyupmin.ap-northeast-2.elasticbeanstalk.com/
+
+import "../schedule/css/csSogong_Board.css";
 import React from "react";
+
+// baseURL import
+const baseURL =
+    import.meta.env.VITE_DEV_PROXY_URL;
+
 
 
 export default function Board() {
@@ -31,23 +39,26 @@ export default function Board() {
         // switch2 && switch2.addEventListener("click", onSwitch2);
 
 
-        // 글쓰기 버튼 로직
-        const writeBtn = document.getElementById("GSP_write");
-        const exitWriteBtn = document.getElementById("exit_write");
-        const blurList = document.getElementById("GSP_blurScreen");
-        const writePanel = document.querySelector(".GaeSiPan_Write");
 
-        const onOpenWrite = () => {
-            writePanel?.classList.add("on");
-            blurList?.classList.add("on");
+        // test : 투표 데이터
+        // 항목별 투표수 == int array
+        // 항목별 누가 투표? == String array 2차원
+        // 
+        // test : 투표에 대한 기본 정보
+        const test_vote_info = {
+            "postId": 1,
+            "title": "다중 선택 테스트 투표",
+            "endTime": "2025-12-31T23:59:00",
+            "allowMultipleChoices": true,
+            "isAnonymous": false,
+            "optionContents": ["A안", "B안", "C안"]
         };
-        const onCloseWrite = () => {
-            writePanel?.classList.remove("on");
-            blurList?.classList.remove("on");
-        };
+        // test : int array
+        const test_vote_INTarrray = [3, 1, 2];
+        // test : String array 2차원
+        const test_vote_WHOvote = [["가영", "나영", "다영"], ["가영"], ["가영", "나영"]];
 
-        writeBtn && writeBtn.addEventListener("click", onOpenWrite);
-        exitWriteBtn && exitWriteBtn.addEventListener("click", onCloseWrite);
+
 
 
         // 게시글 임시 데이터
@@ -88,6 +99,27 @@ export default function Board() {
       <post><id>34</id><title>34번글 제목</title><content>34번글 내용</content><author>34번 글쓴이</author><timestamp>2025-09-10 23:00:00</timestamp><ishavefile>false</ishavefile><ishavevote>true</ishavevote><isitGongJi>false</isitGongJi></post>
       <post><id>35</id><title>35번글 제목</title><content>35번글 내용</content><author>35번 글쓴이</author><timestamp>2025-09-11 09:00:00</timestamp><ishavefile>true</ishavefile><ishavevote>false</ishavevote><isitGongJi>false</isitGongJi></post>
     </posts>`;
+
+
+
+        // 글쓰기 버튼 로직
+        const writeBtn = document.getElementById("GSP_write");
+        const exitWriteBtn = document.getElementById("exit_write");
+        const blurList = document.getElementById("GSP_blurScreen");
+        const writePanel = document.querySelector(".GaeSiPan_Write");
+
+        const onOpenWrite = () => {
+            writePanel?.classList.add("on");
+            blurList?.classList.add("on");
+        };
+        const onCloseWrite = () => {
+            writePanel?.classList.remove("on");
+            blurList?.classList.remove("on");
+        };
+
+        writeBtn && writeBtn.addEventListener("click", onOpenWrite);
+        exitWriteBtn && exitWriteBtn.addEventListener("click", onCloseWrite);
+
 
         // 게시판 페이지 글 나열 로직
         const PAGE_SIZE = 10;
@@ -251,68 +283,84 @@ export default function Board() {
       </div>
     `;
 
-        // (임시) 투표 박스 개체
-        const VOTE_HTML = `
+
+        const escapeHTML = (s) =>
+            String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+        const buildVoteHTML = (voteInfo, voteCounts, voteWho) => {
+            if (!voteInfo) return "";
+
+            const options = voteInfo.optionContents || [];
+            const counts = voteCounts || [];
+            const whoAll = voteWho || [];
+
+            const optionsHTML = options
+                .map((opt, idx) => {
+                    const inputType = voteInfo.allowMultipleChoices ? "checkbox" : "radio";
+                    return `
+          <div class="VOTE_item">
+            <input type="${inputType}" name="VOTE_item_check" value="${escapeHTML(opt)}">
+            <span>${escapeHTML(opt)}</span>
+          </div>
+        `;
+                })
+                .join("");
+
+            const resultsHTML = options
+                .map((opt, idx) => {
+                    const count = counts[idx] != null ? counts[idx] : 0;
+                    const voters = Array.isArray(whoAll[idx]) ? whoAll[idx] : [];
+
+                    const votersHTML = voteInfo.isAnonymous
+                        ? ""
+                        : voters
+                            .map(
+                                (name) => `
+              <div class="VoteResult_item_WhoVoted_person">${escapeHTML(name)}</div>
+            `
+                            )
+                            .join("");
+
+                    const whoVotedBlock = voteInfo.isAnonymous
+                        ? ""
+                        : `
+            <div class="VoteResult_item_WhoVoted">
+              ${votersHTML}
+            </div>
+          `;
+
+                    return `
+          <div class="VoteResult_item">
+            <span>${escapeHTML(opt)}</span>
+            <div class="VoteResult_item_PeopleNumber">${count}명</div>
+            ${whoVotedBlock}
+            <div class="VoteResult_item_Gage"></div>
+          </div>
+        `;
+                })
+                .join("");
+
+            const multiText = voteInfo.allowMultipleChoices ? "중복 선택 허용" : "단일 선택";
+            const anonymousText = voteInfo.isAnonymous ? "익명 투표" : "익명 아님";
+
+            return `
       <div class="VOTE_container">
         <div class="VOTE_Page">
-          <h1 id="VOTE_title">이 투표의 이름</h1>
-          <h2 id="VOTE_isitMulti">중복 허용</h2>
-          <h2 id="VOTE_isitSecret">익명 아님</h2>
-
-          <div class="VOTE_item">
-            <input type="checkbox" name="VOTE_item_check" value="1번 선택지">
-            <span>1번 선택지</span>
-          </div>
-          <div class="VOTE_item">
-            <input type="checkbox" name="VOTE_item_check" value="2번 선택지">
-            <span>2번 선택지</span>
-          </div>
-          <div class="VOTE_item">
-            <input type="checkbox" name="VOTE_item_check" value="3번 선택지">
-            <span>3번 선택지</span>
-          </div>
+          <h1 id="VOTE_title">${escapeHTML(voteInfo.title)}</h1>
+          <h2 id="VOTE_isitMulti">${multiText}</h2>
+          <h2 id="VOTE_isitSecret">${anonymousText}</h2>
+          ${optionsHTML}
           <button class="VOTE_complete_button"><b>투표완료</b></button>
         </div>
 
         <div class="VOTE_Result">
-
-          <h1 id="VoteResult_title">이 투표의 결과</h1>
-          <div class="VoteResult_item">
-            <span>1번 선택지</span>
-            <div class="VoteResult_item_PeopleNumber">3명</div>
-            <div class="VoteResult_item_WhoVoted">
-              <div class="VoteResult_item_WhoVoted_person">이름1</div>
-              <div class="VoteResult_item_WhoVoted_person">이름2</div>
-              <div class="VoteResult_item_WhoVoted_person">이름3</div>
-            </div>
-            <div class="VoteResult_item_Gage">
-              <div class="VoteResult_item_Gage_inner"></div>
-            </div>
-          </div>
-          <div class="VoteResult_item">
-            <span>2번 선택지</span>
-            <div class="VoteResult_item_PeopleNumber">2명</div>
-            <div class="VoteResult_item_WhoVoted">
-              <div class="VoteResult_item_WhoVoted_person">이름4</div>
-              <div class="VoteResult_item_WhoVoted_person">이름5</div>
-            </div>
-            <div class="VoteResult_item_Gage"></div>
-          </div>
-          <div class="VoteResult_item">
-            <span>3번 선택지</span>
-            <div class="VoteResult_item_PeopleNumber">1명</div>
-            <div class="VoteResult_item_WhoVoted">
-              <div class="VoteResult_item_WhoVoted_person">이름6</div>
-            </div>
-            <div class="VoteResult_item_Gage"></div>
-          </div>
+          <h1 id="VoteResult_title">${escapeHTML(voteInfo.title)} 결과</h1>
+          ${resultsHTML}
           <button class="VoteResult_revote_button">재투표하기</button>
         </div>
       </div>
     `;
-
-        const escapeHTML = (s) =>
-            String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+        };
 
         const getPostDataById = (idStr) => {
             const el = postsArray.find(
@@ -331,10 +379,18 @@ export default function Board() {
             };
         };
 
+
+        // seeContainer == div class = .GaeSiPan_See
+        const class_GaeSiPan_list = seeContainer.querySelector('.GaeSiPan_list');
+
         const renderSee = (post) => {
+
+            seeContainer.classList.add("on");
+
+
             if (!post) return;
             const fileHTML = post.hasFile ? DOWNLOAD_HTML : "";
-            const voteHTML = post.hasVote ? VOTE_HTML : "";
+            const voteHTML = post.hasVote ? buildVoteHTML(test_vote_info, test_vote_INTarrray, test_vote_WHOvote) : "";
 
             seeContainer.innerHTML = `
         <button id="exit_See">X</button>
@@ -346,9 +402,10 @@ export default function Board() {
           <div id="GSPS_title">${escapeHTML(post.title)}</div>
         </div>
 
-        ${fileHTML}
-
-        ${voteHTML}
+        <div class="GSPS_field">
+          ${fileHTML}
+          ${voteHTML}
+        </div>
 
         <div class="GSPS_field">
           <div id="GSPS_content">
@@ -368,12 +425,18 @@ export default function Board() {
             const exitBtn = seeContainer.querySelector("#exit_See");
             exitBtn && exitBtn.addEventListener("click", () => {
                 seeContainer.innerHTML = "";
+                seeContainer.classList.remove("on");
             });
 
-            // (임시) 투표 결과창
-            let VoteResult_NumberResult = [3, 2, 1];
-            let VoteResult_Option_who = [["이름1", "이름2", "이름3"], ["이름4", "이름5"], ["이름6"]];
 
+            // =====================================================================
+            // (임시) 투표 결과창
+            let VoteResult_NumberResult = Array.isArray(test_vote_INTarrray) ? [...test_vote_INTarrray] : [];
+            let VoteResult_Option_who = Array.isArray(test_vote_WHOvote)
+                ? test_vote_WHOvote.map((arr) => (Array.isArray(arr) ? [...arr] : []))
+                : [];
+
+            const VOTE_PAGE_class = document.querySelector(".VOTE_Page")
             const completeBtn = seeContainer.querySelector(".VOTE_complete_button");
             const resultPanel = seeContainer.querySelector(".VOTE_Result");
             completeBtn &&
@@ -386,12 +449,15 @@ export default function Board() {
                             if (VoteResult_NumberResult[index] == null) VoteResult_NumberResult[index] = 0;
                             VoteResult_NumberResult[index]++;
                             if (!VoteResult_Option_who[index]) VoteResult_Option_who[index] = [];
-                            VoteResult_Option_who[index].push("너");
+                            VoteResult_Option_who[index].push("나님");
                         }
                     });
                     console.log("투표 결과 인원수:", VoteResult_NumberResult);
                     console.log("투표 결과 누가:", VoteResult_Option_who);
+
+                    // 화면 키고 끄는 로직
                     resultPanel && resultPanel.classList.add("on");
+                    VOTE_PAGE_class.classList.add("off");
                 });
 
             const numBtns = seeContainer.querySelectorAll(".VoteResult_item_PeopleNumber");
@@ -406,6 +472,8 @@ export default function Board() {
             seeContainer.scrollIntoView({ behavior: "smooth", block: "start" });
         };
 
+
+        // ==============================================================================================
         // 게시판 리스트에서 게시글 1개 클릭
         const onListClick = (e) => {
             const item = e.target.closest(".post_item");
@@ -420,17 +488,21 @@ export default function Board() {
         };
         listContainer.addEventListener("click", onListClick);
 
-        // 게시글 작성 완료 버튼 로직
+
+        // ==============================================================================================
+        // 게시글 작성완료 버튼 로직
         const onSubmitWrite = () => {
             const titleEl = document.getElementById("title");
             const isNoticeEl = document.getElementById("is-notice");
             const fileEl = document.getElementById("file-upload");
             const contentEl = document.getElementById("content");
+            const isVoteEl = document.getElementById("is-vote");
 
             const title = titleEl && titleEl.value;
             const isNotice = isNoticeEl && isNoticeEl.checked;
             const files = (fileEl && fileEl.files) || null;
             const content = contentEl && contentEl.value;
+            const hasVoting = isVoteEl && isVoteEl.checked;
 
             if (!title || !content) {
                 alert("제목과 본문을 모두 입력해주세요.");
@@ -454,7 +526,60 @@ export default function Board() {
             console.log("게시글 생성 로그");
             console.log(LOG_PostMake);
 
-            alert("게시글 생성 완료. console log 확인");
+
+            // =====================================================================
+            // POST : /api/posts
+            const postPayload = {
+                // TODO: 실제 projectPk, authorName 값으로 교체
+                projectPk: 0,
+                authorName: "글쓴이",
+                title: value_PostMake_title,
+                content: value_PostMake_content,
+                isNotice: isNotice,
+                hasVoting: !!hasVoting,
+                hasFile: !!(files && files.length > 0),
+            };
+            const fileListForLog = files ? Array.from(files).map((f) => f.name) : [];
+
+
+            // post 내용 그대로 console log
+            console.log("POST : /api/posts 보내는 내용 = ", postPayload);
+            console.log("POST : /api/posts 파일 보내는 내용 = ", fileListForLog);
+
+            // multipart/form-data 전송을 위한 FormData 구성
+            const formData = new FormData();
+            formData.append("post", JSON.stringify(postPayload));
+            if (files) {
+                Array.from(files).forEach((file) => {
+                    formData.append("files", file);
+                });
+            }
+
+            // 로그인 토큰
+            const token = localStorage.getItem("token");
+
+            fetch(`${baseURL}/api/posts`, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                },
+                body: formData,
+            })
+                // return 값 console log
+                .then((res) => {
+                    console.log("RAW RESPONSE /api/posts:", res);
+                    try {
+                        return res.json();
+                    } catch (e) {
+                        return null;
+                    }
+                })
+                .then((data) => {
+                    console.log("POST /api/posts success:", data);
+                })
+                .catch((err) => {
+                    console.error("POST /api/posts error:", err);
+                });
         };
         const submitBtn = document.querySelector(".GSPW_submit_button");
         submitBtn && submitBtn.addEventListener("click", onSubmitWrite);
@@ -524,6 +649,7 @@ export default function Board() {
         addOptionBtn && addOptionBtn.addEventListener("click", onAddOption);
 
 
+        // ============================================================
         // 투표 생성 버튼 로직
         const makeVoteBtn = document.getElementById("VoteMake_button");
         const onMakeVote = () => {
@@ -546,8 +672,8 @@ export default function Board() {
             }
 
             const value_VoteMake_Title = titleEl.value;
-            const value_VoteMake_Deadline_Day = dayEl.value;
-            const value_VoteMake_Deadline_Time = timeEl.value;
+            const value_VoteMake_Deadline_Day = dayEl.value;   // "YYYY-MM-DD"
+            const value_VoteMake_Deadline_Time = timeEl.value; // "HH:MM"
             const value_VoteMake_isitMulti = document.getElementById("VoteMake_isitMulti")?.checked || false;
             const value_VoteMake_isitAnonymous = document.getElementById("VoteMake_isitAnonymous")?.checked || false;
             const value_VoteMake_Options = Array.from(
@@ -564,6 +690,50 @@ export default function Board() {
             };
             console.log("투표 생성 로그");
             console.log(LOG_VoteMake);
+
+
+            // POST : /api/votes
+            const endTimeISO = `${value_VoteMake_Deadline_Day}T${value_VoteMake_Deadline_Time}:00Z`;
+
+            const votePayload = {
+                // TODO: 실제 postId로 교체 필요
+                postId: 0,
+                title: value_VoteMake_Title,
+                endTime: endTimeISO,
+                allowMultipleChoices: value_VoteMake_isitMulti,
+                isAnonymous: value_VoteMake_isitAnonymous,
+                optionContents: value_VoteMake_Options,
+            };
+
+            // post 내용 그대로 console log
+            console.log("POST : /api/votes 보내는 내용 = ", votePayload);
+
+            // 로그인 토큰
+            const token = localStorage.getItem("token");
+
+            fetch(`${baseURL}/api/votes`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                },
+                body: JSON.stringify(votePayload),
+            })
+                // return 값 console log
+                .then((res) => {
+                    console.log("RAW RESPONSE /api/votes:", res);
+                    try {
+                        return res.json();
+                    } catch (e) {
+                        return null;
+                    }
+                })
+                .then((data) => {
+                    console.log("POST /api/votes success:", data);
+                })
+                .catch((err) => {
+                    console.error("POST /api/votes error:", err);
+                });
         };
         makeVoteBtn && makeVoteBtn.addEventListener("click", onMakeVote);
 
@@ -593,16 +763,23 @@ export default function Board() {
                 <button id="GSP_write">게시글 작성</button>
                 <div id="list_write">
                     <div className="post_header">
-                        <span className="post_id">글번호</span>
+                        <span className="post_id">번호</span>
                         <span className="post_title">제목</span>
                         <span className="post_author">작성자</span>
                         <span className="post_timestamp">작성일자</span>
-                        <span className="post_ishaveVote">투표유무</span>
-                        <span className="post_ishavefile">파일첨부</span>
+                        <span className="post_ishaveVote">투표</span>
+                        <span className="post_ishavefile">파일</span>
                     </div>
 
                 </div>
                 <div id="GSP_page"></div>
+
+                {/* 검색 = 제목 및 작성자로 검색 */}
+                <div className="GSP_search_container">
+                    <input type="text" id="GSP_search_box" placeholder="제목 및 작성자로 검색" />
+                    <button id="GSP_search_button">검색</button>
+                </div>
+
                 <div id="GSP_blurScreen"></div>
             </div>
 
@@ -616,21 +793,31 @@ export default function Board() {
                     <input type="text" id="title" placeholder="제목을 입력하세요" className="form_input" />
                 </div>
 
-                <div className="GSPW_field">
+                <div className="GSPW_field_left">
+
+
+                    {/* 체크박스 == 공지사항 */}
                     <div className="checkbox_container">
                         <input type="checkbox" id="is-notice" />
                         <label htmlFor="is-notice" className="checkbox_label">공지사항 유무</label>
                     </div>
-                </div>
 
-                <div className="GSPW_field">
+                    {/* 체크박스 == 투표추가 */}
+                    <div className="checkbox_container">
+                        <input type="checkbox" id="is-vote" />
+                        <label htmlFor="is-vote" className="checkbox_label">투표 추가</label>
+                    </div>
+                    <button className="GSPW_vote_button">투표 추가</button>
+
+                    {/* 버튼 == 첨부파일 */}
                     <label htmlFor="file-upload" className="form_label">첨부파일</label>
                     <input type="file" id="file-upload" multiple className="form_file_input" />
-                    <button className="GSPW_vote_button">투표 추가</button>
                 </div>
 
-                <div className="GSPW_field">
+                <div className="GSPW_field_left">
                     <label htmlFor="content" className="form_label">본문</label>
+                </div>
+                <div className="GSPW_field">
                     <textarea id="content" rows="10" placeholder="내용을 입력하세요" className="form_textarea"></textarea>
                 </div>
 
@@ -687,7 +874,7 @@ export default function Board() {
                 </div>
             </div>
 
-            {/* 6번: 게시글 보기 (리액트 js로 채움) */}
+            {/* 6번: 게시글 보기 (리액트 js로 채움) == onListClick */}
             <div className="GaeSiPan_See" />
         </>
     );
