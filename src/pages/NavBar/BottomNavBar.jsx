@@ -21,6 +21,7 @@ const PageNavBar = ({ projectName }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const isCalendarPage = location.pathname.endsWith("/calendar");
+  const isSettingPage = location.pathname === "/setting";
   const isInvalidProject = !projectID || projectID === "undefined";
   const isBasePath = location.pathname === `/project/${projectID}`;
 
@@ -79,13 +80,19 @@ const PageNavBar = ({ projectName }) => {
     setIsModalOpen(false);
   };
 
+  if (isSettingPage) {
+    return null;
+  }
+
   return (
     <>
       <div className="NavBar-bottom">
         <div className="bottom">
           <div
             className={`ProjectName ${
-              isCalendarPage || isBasePath || isInvalidProject ? "disabled" : ""
+              isCalendarPage || isBasePath || isInvalidProject || isSettingPage
+                ? "disabled"
+                : ""
             }`}
             onClick={toggleModal}
           >
