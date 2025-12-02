@@ -35,7 +35,6 @@ const ProjectSetting = () => {
       });
       if (response.ok) {
         const data = await response.json();
-        // API 응답 필드를 컴포넌트에서 사용하는 필드명으로 매핑
         const mappedData = {
           ...data,
           name: data.projectName,
@@ -129,7 +128,7 @@ const ProjectSetting = () => {
       const response = await fetch(
         `${API_URL}/api/projects/${projectId}/reject/${projectUserPk}`,
         {
-          method: "POST",
+          method: "DELETE",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -172,7 +171,7 @@ const ProjectSetting = () => {
       const response = await fetch(
         `${API_URL}/api/projects/${projectId}/expel/${projectUserPk}`,
         {
-          method: "POST",
+          method: "DELETE",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -189,7 +188,7 @@ const ProjectSetting = () => {
   };
 
   // 프로젝트 나가기
-  const handleLeaveProject = async () => {
+  const handleLeaveProject = async (inputProjectName) => {
     try {
       const response = await fetch(`${API_URL}/api/projects/${projectId}/leave`, {
         method: "DELETE",
@@ -197,6 +196,7 @@ const ProjectSetting = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
+        body: JSON.stringify({projectName: inputProjectName }),
       });
       if (response.ok) {
         alert("프로젝트를 나갔습니다.");
@@ -243,12 +243,33 @@ const ProjectSetting = () => {
       alert("초대 코드가 존재하지 않습니다.");
       return;
     }
-    navigator.clipboard.writeText(projectData.joinCode);
-    alert("초대 코드가 복사되었습니다.");
+    
+    const textArea = document.createElement("textarea");
+    textArea.value = projectData.joinCode;
+    textArea.style.position = "fixed";
+    textArea.style.left = "-999999px";
+    textArea.style.top = "-999999px";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+      const successful = document.execCommand('copy');
+      if (successful) {
+        alert("초대 코드가 복사되었습니다.");
+      } else {
+        alert("복사에 실패했습니다. 수동으로 복사해주세요.");
+      }
+    } catch (err) {
+      console.error("복사 실패:", err);
+      alert("복사에 실패했습니다. 수동으로 복사해주세요.");
+    } finally {
+      document.body.removeChild(textArea);
+    }
   };
 
   if (!projectData) {
-    return <div className="ps-loading">로딩 중...</div>;
+    return <div className="ps-loading">프로젝트가 없습니다</div>;
   }
 
   const isOwner = projectData.myRole === "OWNER";
@@ -271,7 +292,6 @@ const ProjectSetting = () => {
 
   return (
     <div className="ps-container">
-      {/* 개발 모드 토글 버튼 */}
       <div className="ps-content">
         {/* 프로젝트 이름 */}
         <div className="ps-header">
@@ -355,13 +375,13 @@ const ProjectSetting = () => {
                       src={PermissionTransferIcon}
                       alt="권한 양도"
                       className="ps-action-icon"
-                      onClick={() => handleTransferOwnership(member.userPk)}
+                      onClick={() => handleTransferOwnership(member.projectUserPk)}
                     />
                     <img
                       src={DeleteIcon}
                       alt="내보내기"
                       className="ps-action-icon"
-                      onClick={() => handleKickMember(member.userPk)}
+                      onClick={() => handleKickMember(member.projectUserPk)}
                     />
                   </div>
                 )}
