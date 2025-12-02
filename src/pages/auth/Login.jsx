@@ -1,12 +1,12 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import './Login.css';
+import "./Login.css";
 
-import Logo from '../../asset/user_icon/logo.svg';
-import LockIcon from '../../asset/user_icon/lock_icon.svg';
-import UserIcon from '../../asset/user_icon/user_icon.svg';
+import Logo from "../../asset/user_icon/logo.svg";
+import LockIcon from "../../asset/user_icon/lock_icon.svg";
+import UserIcon from "../../asset/user_icon/user_icon.svg";
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_DEV_PROXY_URL;
 
 const Login = () => {
   const [email, setEmail] = React.useState("");
@@ -19,18 +19,16 @@ const Login = () => {
     e.preventDefault();
     await new Promise((r) => setTimeout(r, 1000));
 
-    const response = await fetch(`${API_URL}/users/login`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: email,
-          password: password,
-        }),
-      }
-    );
+    const response = await fetch(`${API_URL}/api/users/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: email,
+        password: password,
+      }),
+    });
     const result = await response.json();
 
     if (response.status === 200) {
@@ -93,7 +91,9 @@ const Login = () => {
         <button type="submit">LOGIN</button>
 
         {/* 에러 메시지 */}
-        {loginCheck && <p className="error">아이디나 비밀번호가 일치하지 않습니다.</p>}
+        {loginCheck && (
+          <p className="error">아이디나 비밀번호가 일치하지 않습니다.</p>
+        )}
 
         {/* sign up 구분선 */}
         <div className="divider">
@@ -101,7 +101,11 @@ const Login = () => {
         </div>
 
         {/* 회원가입 버튼 */}
-        <button type="button" className="signup-button" onClick={handleSignupClick}>
+        <button
+          type="button"
+          className="signup-button"
+          onClick={handleSignupClick}
+        >
           회원가입
         </button>
 
