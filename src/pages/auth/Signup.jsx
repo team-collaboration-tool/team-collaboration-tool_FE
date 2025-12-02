@@ -12,13 +12,13 @@ const API_URL = import.meta.env.VITE_DEV_PROXY_URL;
 // 전공/직무
 const MAJOR_OPTIONS = [
   { value: "", label: "전공/직무를 선택하세요" },
-  { value: "IT", label: "소프트웨어 개발/IT엔지니어링" },
-  { value: "marketing", label: "마케팅/광고" },
-  { value: "operation", label: "기획/운영" },
-  { value: "consulting", label: "기술영업/컨설팅" },
-  { value: "research", label: "연구/교육" },
-  { value: "management", label: "경영/관리" },
-  { value: "other", label: "기타" },
+  { value: "소프트웨어 개발/IT엔지니어링", label: "소프트웨어 개발/IT엔지니어링" },
+  { value: "마케팅/광고", label: "마케팅/광고" },
+  { value: "기획/운영", label: "기획/운영" },
+  { value: "기술영업/컨설팅", label: "기술영업/컨설팅" },
+  { value: "연구/교육", label: "연구/교육" },
+  { value: "경영/관리", label: "경영/관리" },
+  { value: "기타", label: "기타" },
 ];
 
 const Signup = () => {
