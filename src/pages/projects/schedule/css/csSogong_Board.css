@@ -2,13 +2,14 @@
 /* 2번: 게시판 나열 */
 .GaeSiPan_list {
     display: block;
-
     position: absolute;
-    transform: translate(-50%, 0%);
+    transform: translate(-50%, 0);
     left: 50%;
-    top: 70px;
+    top: 10px;
+    bottom: 10px;
     width: 1600px;
-    height: 800px;
+    height: auto;
+
     border: 2px solid black;
     background-color: white;
     border-radius: 12px;
@@ -30,6 +31,7 @@
     font-weight: bold;
     margin-bottom: 1.5rem;
     color: rgb(0, 0, 0);
+    z-index: 2;
 }
 
 
@@ -37,9 +39,10 @@
     position: absolute;
     transform: translate(-50%, 0);
     left: 50%;
-    top: 75px;
-    width: 1400px;
-    height: 700px;
+    top: 50px;
+    bottom: 50px;
+    width: 1500px;
+    height: auto;
 
     display: flex;
     flex-direction: column;
@@ -47,7 +50,7 @@
     background-color: #fff;
     padding: 1.5rem;
     border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    /* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); */
 }
 
 .post_header {
@@ -165,7 +168,7 @@
 
 #GSP_page {
     position: absolute;
-    left: 100px;
+    left: 50px;
     bottom: 25px;
     width: 540px;
     height: 45px;
@@ -180,7 +183,7 @@
 
 .GSP_search_container {
     position: absolute;
-    right: 100px;
+    right: 50px;
     bottom: 20px;
 
     display: flex;
@@ -282,19 +285,20 @@
 /* 3번: 게시글 작성 */
 .GaeSiPan_Write {
     display: none;
-    padding: 2rem;
-
     position: absolute;
     transform: translate(-50%, 0);
     left: 50%;
-    top: 70px;
+    top: 10px;
+    bottom: 10px;
     width: 1600px;
-    height: 800px;
+    height: auto;
+
+    padding: 1.5rem;
     border: 2px solid black;
     border-radius: 12px;
     background-color: white;
 
-    z-index: 3;
+    z-index: 4;
 }
 
 .GaeSiPan_Write.on {
@@ -328,8 +332,11 @@
 #GSPW_head {
     font-size: 1.875rem;
     font-weight: bold;
-    margin-bottom: 1.5rem;
+    margin: 1rem;
+    padding-bottom: 1rem;
     color: rgb(0, 0, 0);
+    text-align: left;
+    border-bottom: 1px solid black;
 }
 
 .GSPW_field {
@@ -346,6 +353,18 @@
     flex-direction: row;
     align-items: center;
     justify-content: left;
+    border-bottom: 1px solid black;
+}
+.GSPW_field_left label[for="file-upload"] {
+    margin-left: auto;
+}
+.GSPW_field_left_2 {
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: left;
+    /* border-bottom: 1px solid black; */
 }
 
 .form_label {
@@ -381,6 +400,7 @@
 .checkbox_container {
     display: flex;
     align-self: center;
+    margin-left: 2rem;
 }
 
 .checkbox_label {
@@ -393,10 +413,12 @@
 }
 
 .form_file_input::-webkit-file-upload-button {
+    justify-self: right;
+    margin-left: auto;
     margin-right: 1rem;
     padding: 0.5rem 1rem;
     border: 0;
-    border-radius: 9999px;
+    border-radius: 0.5rem;
     font-size: 0.875rem;
     font-weight: 600;
     background-color: rgb(0, 0, 0, 0.05);
@@ -413,11 +435,13 @@
     justify-content: flex-end;
 }
 
+/* 투표 추가 버튼 */
 .GSPW_vote_button {
+    display: none;
+
     cursor: pointer;
     width: 100px;
     height: 33px;
-
     padding: 0;
     background-color: rgb(0, 0, 0, 0.05);
     color: #33A1E0;
@@ -426,24 +450,21 @@
     border-radius: 0.5rem;
     border: none;
 }
+.GSPW_field_left:has(#is-vote:checked) .GSPW_vote_button {
+    display: block;
+}
 
 .GSPW_submit_button {
     cursor: pointer;
-
     padding: 0.5rem 1.5rem;
     background-color: #33A1E0;
     color: #ffffff;
     font-weight: 600;
     border-radius: 0.5rem;
     border: none;
-    /* transition: background-color 0.2s; */
 }
 
-/* .submit-button:hover {
-    background-color: #33A1E0;
-} */
 
-/* Custom Alert Styles */
 .custom-alert-overlay {
     position: fixed;
     top: 0;
@@ -506,20 +527,21 @@
 /* 6번: 게시글 보기 */
 .GaeSiPan_See {
     display: none;
-    /* margin: 2rem auto; */
-    padding: 2rem;
-
     position: absolute;
     transform: translate(-50%, 0);
     left: 50%;
-    top: 70px;
+    top: 10px;
+    bottom: 10px;
     width: 1600px;
-    height: 800px;
+    height: auto;
+
+    padding: 1.5rem;
     border: 2px solid black;
     border-radius: 12px;
     background-color: white;
-
     z-index: 3;
+
+    text-align: left;
 }
 .GaeSiPan_See.on {
     display: block;
@@ -534,7 +556,7 @@
     color: rgb(0, 0, 0);
 
     position: absolute;
-    right: 30px;
+    left: 30px;
     top: 15px;
     width: 20px;
     height: 20px;
@@ -552,7 +574,7 @@
     color: rgb(0, 0, 0);
 
     position: absolute;
-    right: 80px;
+    right: 30px;
     top: 15px;
     width: 75px;
     height: 30px;
@@ -570,7 +592,7 @@
     color: rgb(0, 0, 0);
 
     position: absolute;
-    right: 180px;
+    right: 130px;
     top: 15px;
     width: 75px;
     height: 30px;
@@ -593,10 +615,20 @@
     margin: 1rem;
     border-radius: 0.5rem;
 }
+
+.GSPS_title_field {
+    display: flex;
+    top: 50px;
+    margin: 1rem;
+    border-top: 1px solid black;
+    border-bottom: 1px solid black;
+    padding: 1rem;
+}
+
 .GSPS_download_field {
     display: flex;
     flex-direction: column;
-    margin: 1rem;
+    margin: 1rem 1rem 1rem auto;
     border: 1.5px solid rgb(0, 0, 0);
     border-radius: 0.5rem;
     width: 33%;
@@ -624,12 +656,18 @@
 #GSPS_title {
     font-size: 1.5rem;
     font-weight: bold;
-    margin-bottom: 1.5rem;
     color: rgb(0, 0, 0);
 
     border: 1px solid rgb(0, 0, 0);
     border: 2px;
 }
+
+#GSPS_when {
+    display: flex;
+    margin-left: auto;
+    align-items: center;
+}
+
 #GSPS_file {
     width: 100px;
     height: 50px;
@@ -691,10 +729,22 @@
     color: rgb(0, 0, 0);
 }
 
+.VOTE_choose_container {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 1:1 비율로 2개의 열 생성 */
+    gap: 10px; /* 선택지 사이의 간격 */
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
 .VOTE_item {
+    display: flex;
+    align-items: center;
+    width: auto;
+    margin: 0;
+    padding: 0.5rem 1rem;
+
     border-radius: 0.5rem;
-    margin: 1.5rem auto;
-    padding: 1rem;
     border: 1px solid rgb(0, 0, 0);
     background-color: rgb(255, 255, 255);
     color: rgb(0, 0, 0);
@@ -729,21 +779,13 @@
 .VOTE_Result.on {
     display: block;
 }
-
-/* .exit_VOTE_Result {
-    cursor: pointer;
-
-    position: absolute;
-    right: 20px;
-    top: 10px;
-    width: 25px;
-    height: 25px;
-    border: 1px solid rgb(0, 0, 0);
-    border-radius: 0.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-} */
+.VoteResult_grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 1:1 비율 2열 */
+    gap: 10px; /* 간격 */
+    margin-top: 1rem;
+    margin-bottom: 1.5rem;
+}
 
 #VoteResult_title {
     font-size: 1.5rem;
@@ -755,10 +797,9 @@
 .VoteResult_item {
     border: 1px solid rgb(0, 0, 0);
     border-radius: 0.5rem;
-    margin: 1.5rem auto;
-    padding: 1rem;
+    margin: 0;
+    padding: 0.5rem 1rem;
     color: rgb(0, 0, 0);
-
     position: relative;
 }
 
@@ -789,12 +830,12 @@
     display: flex;
 }
 
-.VoteResult_item_Gage {
+/* .VoteResult_item_Gage {
     margin-top: 0.5rem;
     height: 10px;
     border: 1px solid rgb(0, 0, 0);
     border-radius: 0.25rem;
-}
+} */
 
 .VoteResult_revote_button {
     cursor: pointer;
