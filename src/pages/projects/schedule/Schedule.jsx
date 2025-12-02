@@ -175,7 +175,6 @@ export default function TimeSchedulerPage() {
   }, []);
 
 
-
   // 시작, 종료 시간을 00분으로 고정
   const forceMinutes00 = React.useCallback((value) => {
     if (!value) return value;
@@ -409,49 +408,6 @@ export default function TimeSchedulerPage() {
       // ========================================================================
       // 드래그 하다가 손 떼는 순간 generateSummary() 실행
       function generateSummary() {
-
-        // 지우지는 말 것
-        // const summaryParts = [];
-        // days.forEach(day => {
-        //   if (!selectedByDay[day]) return;
-        //   const timeIndices = selectedByDay[day].sort((a, b) => a - b);
-        //   if (timeIndices.length === 0) return;
-
-        //   const dayTimeRanges = [];
-        //   let start = timeIndices[0];
-        //   let end = timeIndices[0];
-
-        //   for (let i = 1; i < timeIndices.length; i++) {
-        //     if (timeIndices[i] === end + 1) end = timeIndices[i];
-        //     else {
-        //       const startTime = formatTime(start);
-        //       const endTime = formatTime(end + 1);
-        //       dayTimeRanges.push(`${startTime}~${endTime}`);
-        //       start = timeIndices[i];
-        //       end = timeIndices[i];
-        //     }
-        //   }
-
-        //   const startTime = formatTime(start);
-        //   const endTime = formatTime(end + 1);
-        //   dayTimeRanges.push(`${startTime}~${endTime}`);
-        //   summaryParts.push(`${day} ${dayTimeRanges.join(', ')}`);
-        // });
-
-        // if (summaryParts.length > 0) {
-        //   console.log("선택된 시간 list ================================");
-        //   summaryParts.forEach(line => console.log(" - ", line));
-        // } else {
-        //   console.log("선택된 시간 없");
-        // }
-
-        // function formatTime(index) {
-        //   const totalMinutes = index * 30 + 9 * 60;
-        //   const hours = Math.floor(totalMinutes / 60);
-        //   const minutes = totalMinutes % 60;
-        //   return String(hours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0');
-        // }
-
         const selectedByDay = {};
         const selectedCells = new Set();
 
