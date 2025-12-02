@@ -56,7 +56,10 @@ const Calendar = () => {
   };
 
   const handleDateClick = (day) => {
-    const dateString = day.toISOString().split("T")[0];
+    const year = day.getFullYear();
+    const month = String(day.getMonth() + 1).padStart(2, "0");
+    const date = String(day.getDate()).padStart(2, "0");
+    const dateString = `${year}-${month}-${date}`;
     navigate(`/project/${projectID}/calendar?selectedDate=${dateString}`);
   };
 
