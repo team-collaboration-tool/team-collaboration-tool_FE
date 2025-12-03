@@ -8,6 +8,14 @@ import editIcon from "./../../asset/Icon/editIcon.svg";
 
 const API_URL = import.meta.env.VITE_DEV_PROXY_URL;
 
+const formatDateForInput = (dateObj) => {
+  if (!dateObj) return "";
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+  const day = String(dateObj.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
 const COLOR_OPTIONS = [
   { id: 1, color: "#F66366", name: "빨강" },
   { id: 2, color: "#F0E159", name: "노랑" },
@@ -16,12 +24,30 @@ const COLOR_OPTIONS = [
   { id: 5, color: "#9B8AE9", name: "보라" },
 ];
 
+const generateTimeOptions = () => {
+  const options = [];
+  for (let h = 0; h < 24; h++) {
+    for (let m = 0; m < 60; m += 15) {
+      const hour = String(h).padStart(2, "0");
+      const minute = String(m).padStart(2, "0");
+      options.push(`${hour}:${minute}`);
+    }
+  }
+  return options;
+};
+
+const TIME_OPTIONS = generateTimeOptions();
+
 // 일정 추가
 const AddScheduleForm = ({ date, onCancel, onScheduleAdded, projectId }) => {
   // 폼 입력 상태 관리
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [selectedColor, setSelectedColor] = useState(COLOR_OPTIONS[0].color);
+  const [startDate, setStartDate] = useState(formatDateForInput(date));
+  const [startTime, setStartTime] = useState("09:00");
+  const [endDate, setEndDate] = useState(formatDateForInput(date));
+  const [endTime, setEndTime] = useState("18:00");
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState(null);
   const [projectMembers, setProjectMembers] = useState([]);
@@ -63,33 +89,33 @@ const AddScheduleForm = ({ date, onCancel, onScheduleAdded, projectId }) => {
     fetchProjectMembers();
   }, [projectId]);
 
-  const formattedDate = date
-    ? date.toLocaleDateString("ko-KR", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
-    : "날짜 미정";
-
   const handleSave = async () => {
-    if (!title || !date || !projectId) {
-      alert("제목 입력은 필수입니다.");
+    const [startHour, startMinute] = startTime.split(":").map(Number);
+    const [endHour, endMinute] = endTime.split(":").map(Number);
+
+    const startDateTime = new Date(startDate);
+    startDateTime.setUTCHours(startHour - 9, startMinute, 0, 0);
+
+    const endDateTime = new Date(endDate);
+    endDateTime.setUTCHours(endHour - 9, endMinute, 0, 0);
+
+    if (startDateTime >= endDateTime) {
+      alert("종료 시간은 시작 시간보다 늦어야 합니다.");
+      return;
+    }
+
+    if (!title.trim()) {
+      alert("일정 제목을 입력해 주세요.");
       return;
     }
 
     setLoading(true);
     setSubmitError(null);
 
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    const dateISO = `${year}-${month}-${day}`;
-
     const scheduleData = {
       title: title,
-      // 캘린더에서 선택한 날짜의 시작 시간과 다음 날 시작 시간으로 설정 (종일 일정)
-      startTime: `${dateISO}T00:00:00.000Z`,
-      endTime: `${dateISO}T23:59:59.000Z`,
+      startTime: startDateTime.toISOString(),
+      endTime: endDateTime.toISOString(),
       description: description,
       color: selectedColor,
       participantUserPks: selectedParticipants,
@@ -112,6 +138,7 @@ const AddScheduleForm = ({ date, onCancel, onScheduleAdded, projectId }) => {
 
       if (response.ok) {
         console.log("일정 저장 성공!");
+        window.dispatchEvent(new CustomEvent("scheduleUpdated"));
         onScheduleAdded();
         onCancel(); // 폼 닫기
       } else {
@@ -136,7 +163,7 @@ const AddScheduleForm = ({ date, onCancel, onScheduleAdded, projectId }) => {
 
   return (
     <div className="AddScheduleForm">
-      <p className="formDate">날짜: {formattedDate}</p>
+      <p className="formDate">일정명 & 태그</p>
       {submitError && <p style={{ color: "red" }}>에러: {submitError}</p>}
 
       <input
@@ -147,6 +174,82 @@ const AddScheduleForm = ({ date, onCancel, onScheduleAdded, projectId }) => {
         onChange={(e) => setTitle(e.target.value)}
         disabled={loading}
       />
+      <div className="colorSelector">
+        <div className="colorTagBorder">
+          <div className="colorOptions">
+            {COLOR_OPTIONS.map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                className={`colorOption ${
+                  selectedColor === option.color ? "selected" : ""
+                }`}
+                style={{
+                  backgroundColor: option.color,
+                  border:
+                    selectedColor === option.color
+                      ? "3px solid #000"
+                      : "2px solid #ddd",
+                }}
+                onClick={() => setSelectedColor(option.color)}
+                disabled={loading}
+                aria-label={option.name}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="dateTimeContainer">
+        <div className="dateTitle">일자</div>
+        <div className="dateInputContainer">
+          <div className="dateTimeGroup">
+            <div className="dateTimeInputs">
+              <input
+                type="date"
+                className="dateInput"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                disabled={loading}
+              />
+              <select
+                className="timeInput"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                disabled={loading}
+              >
+                {TIME_OPTIONS.map((time) => (
+                  <option key={time} value={time}>
+                    {time}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="dateTimeGroup">
+            <div className="dateTimeInputs">
+              <input
+                type="date"
+                className="dateInput"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                disabled={loading}
+              />
+              <select
+                className="timeInput"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+                disabled={loading}
+              >
+                {TIME_OPTIONS.map((time) => (
+                  <option key={time} value={time}>
+                    {time}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
       <textarea
         placeholder="상세 내용"
         className="formTextarea"
@@ -154,30 +257,6 @@ const AddScheduleForm = ({ date, onCancel, onScheduleAdded, projectId }) => {
         onChange={(e) => setDescription(e.target.value)}
         disabled={loading}
       />
-      <div className="colorSelector">
-        <p className="colorLabel">컬러 태그</p>
-        <div className="colorOptions">
-          {COLOR_OPTIONS.map((option) => (
-            <button
-              key={option.id}
-              type="button"
-              className={`colorOption ${
-                selectedColor === option.color ? "selected" : ""
-              }`}
-              style={{
-                backgroundColor: option.color,
-                border:
-                  selectedColor === option.color
-                    ? "3px solid #000"
-                    : "2px solid #ddd",
-              }}
-              onClick={() => setSelectedColor(option.color)}
-              disabled={loading}
-              aria-label={option.name}
-            />
-          ))}
-        </div>
-      </div>
       <div className="participantSelector">
         <p className="participantLabel">참가자 선택</p>
 
@@ -241,6 +320,26 @@ const EditScheduleForm = ({
     schedule.participants ? schedule.participants.map((p) => p.userPk) : []
   );
 
+  const scheduleStartDate = new Date(schedule.startTime);
+  const scheduleEndDate = new Date(schedule.endTime);
+
+  const formattedDate = scheduleStartDate.toLocaleDateString("ko-KR", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  const [startDate, setStartDate] = useState(
+    formatDateForInput(scheduleStartDate)
+  );
+  const [startTime, setStartTime] = useState(
+    scheduleStartDate.toTimeString().substring(0, 5)
+  );
+  const [endDate, setEndDate] = useState(formatDateForInput(scheduleEndDate));
+  const [endTime, setEndTime] = useState(
+    scheduleEndDate.toTimeString().substring(0, 5)
+  );
+
   useEffect(() => {
     const fetchProjectMembers = async () => {
       if (!projectId) return;
@@ -283,17 +382,28 @@ const EditScheduleForm = ({
     );
   };
 
-  // 일정의 날짜 추출
-  const scheduleDate = new Date(schedule.startTime);
-  const formattedDate = scheduleDate.toLocaleDateString("ko-KR", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-
   const handleUpdate = async () => {
     if (!title || !projectId || !schedule.eventPk) {
       alert("제목 입력은 필수입니다.");
+      return;
+    }
+
+    if (!startDate || !endDate) {
+      alert("시작 날짜와 종료 날짜는 필수입니다.");
+      return;
+    }
+
+    const [startHour, startMinute] = startTime.split(":").map(Number);
+    const [endHour, endMinute] = endTime.split(":").map(Number);
+
+    const startDateTime = new Date(startDate);
+    startDateTime.setUTCHours(startHour - 9, startMinute, 0, 0);
+
+    const endDateTime = new Date(endDate);
+    endDateTime.setUTCHours(endHour - 9, endMinute, 0, 0);
+
+    if (startDateTime >= endDateTime) {
+      alert("종료 시간은 시작 시간보다 늦어야 합니다.");
       return;
     }
 
@@ -302,8 +412,8 @@ const EditScheduleForm = ({
 
     const scheduleData = {
       title: title,
-      startTime: schedule.startTime,
-      endTime: schedule.endTime,
+      startTime: startDateTime.toISOString(),
+      endTime: endDateTime.toISOString(),
       description: description,
       color: selectedColor,
       participantUserPks: selectedParticipants,
@@ -326,6 +436,7 @@ const EditScheduleForm = ({
 
       if (response.ok) {
         console.log("일정 수정 성공!");
+        window.dispatchEvent(new CustomEvent("scheduleUpdated"));
         onScheduleUpdated();
         onCancel();
       } else {
@@ -353,13 +464,6 @@ const EditScheduleForm = ({
         onChange={(e) => setTitle(e.target.value)}
         disabled={loading}
       />
-      <textarea
-        placeholder="상세 내용"
-        className="formTextarea"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        disabled={loading}
-      />
       <div className="colorSelector">
         <p className="colorLabel">컬러 태그</p>
         <div className="colorOptions">
@@ -384,6 +488,61 @@ const EditScheduleForm = ({
           ))}
         </div>
       </div>
+      <div className="dateTimeGroup">
+        <div className="dateTimeLabel">시작</div>
+        <div className="dateTimeInputs">
+          <input
+            type="date"
+            className="formInput dateInput"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            disabled={loading}
+          />
+          <select
+            className="formInput timeInput"
+            value={startTime}
+            onChange={(e) => setStartTime(e.target.value)}
+            disabled={loading}
+          >
+            {TIME_OPTIONS.map((time) => (
+              <option key={time} value={time}>
+                {time}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+      <div className="dateTimeGroup">
+        <div className="dateTimeLabel">종료</div>
+        <div className="dateTimeInputs">
+          <input
+            type="date"
+            className="formInput dateInput"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            disabled={loading}
+          />
+          <select
+            className="formInput timeInput"
+            value={endTime}
+            onChange={(e) => setEndTime(e.target.value)}
+            disabled={loading}
+          >
+            {TIME_OPTIONS.map((time) => (
+              <option key={time} value={time}>
+                {time}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+      <textarea
+        placeholder="상세 내용"
+        className="formTextarea"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        disabled={loading}
+      />
       <div className="participantSelector">
         <p className="participantLabel">참가자 선택</p>
         {membersLoading ? (
@@ -428,17 +587,34 @@ const EditScheduleForm = ({
 };
 
 const ScheduleDetailView = ({ schedule, onClose, onEdit, onDelete }) => {
-  const scheduleDate = new Date(schedule.startTime);
-  const formattedDate = scheduleDate.toLocaleDateString("ko-KR", {
-    year: "numeric",
+  const scheduleStartDate = new Date(schedule.startTime);
+  const scheduleEndDate = new Date(schedule.endTime);
+
+  // ✅ 같은 날인지 확인
+  const isSameDay =
+    scheduleStartDate.toDateString() === scheduleEndDate.toDateString();
+
+  // ✅ 시작일 포맷팅
+  const formattedStartDate = scheduleStartDate.toLocaleDateString("ko-KR", {
     month: "long",
     day: "numeric",
   });
 
-  const formattedTime = `${scheduleDate.toLocaleTimeString("ko-KR", {
+  // ✅ 종료일 포맷팅
+  const formattedEndDate = scheduleEndDate.toLocaleDateString("ko-KR", {
+    month: "long",
+    day: "numeric",
+  });
+
+  // ✅ 조건부 날짜 표시 (같은 날: 단일 날짜, 다른 날: 범위)
+  const formattedDate = isSameDay
+    ? formattedStartDate
+    : `${formattedStartDate} ~ ${formattedEndDate}`;
+
+  const formattedTime = `${scheduleStartDate.toLocaleTimeString("ko-KR", {
     hour: "2-digit",
     minute: "2-digit",
-  })} - ${new Date(schedule.endTime).toLocaleTimeString("ko-KR", {
+  })} - ${scheduleEndDate.toLocaleTimeString("ko-KR", {
     hour: "2-digit",
     minute: "2-digit",
   })}`;
@@ -634,6 +810,7 @@ const LeftNavBar = ({ isCalendarPage }) => {
       );
       if (response.ok) {
         console.log("일정 삭제 성공!");
+        window.dispatchEvent(new CustomEvent("scheduleUpdated"));
         setRefreshTrigger((prev) => prev + 1);
       } else {
         const errorText = await response.text();
@@ -692,10 +869,22 @@ const LeftNavBar = ({ isCalendarPage }) => {
   }, [fetchProjects]);
 
   useEffect(() => {
-    if (projects.length > 0 && selectedProjectId === null) {
+    if (projects.length === 0) return;
+
+    if (isCalendarPage && currentProjectIdFromURL) {
+      const urlProject = projects.find(
+        (p) => p.projectPk === currentProjectIdFromURL
+      );
+      if (urlProject && selectedProjectId !== currentProjectIdFromURL) {
+        setSelectedProjectId(currentProjectIdFromURL);
+        return;
+      }
+    }
+
+    if (selectedProjectId === null) {
       setSelectedProjectId(projects[0].projectPk);
     }
-  }, [projects, selectedProjectId]);
+  }, [projects, selectedProjectId, isCalendarPage, currentProjectIdFromURL]);
 
   const fetchSchedules = useCallback(async () => {
     if (
@@ -731,9 +920,18 @@ const LeftNavBar = ({ isCalendarPage }) => {
 
       if (response.ok) {
         const data = await response.json();
-        const selectedDateStr = selectedDateFromURL.substring(0, 10);
+        const selectedDate = new Date(selectedDateFromURL);
+        selectedDate.setHours(0, 0, 0, 0);
         const filteredSchedules = data.filter((schedule) => {
-          return schedule.startTime.substring(0, 10) === selectedDateStr;
+          const scheduleStart = new Date(schedule.startTime);
+          const scheduleEnd = new Date(schedule.endTime);
+
+          // 시간 부분을 제거하고 날짜만 비교
+          scheduleStart.setHours(0, 0, 0, 0);
+          scheduleEnd.setHours(0, 0, 0, 0);
+
+          // 선택한 날짜가 일정 기간(시작일 ~ 종료일) 안에 포함되면 표시
+          return selectedDate >= scheduleStart && selectedDate <= scheduleEnd;
         });
 
         setSchedules(filteredSchedules);
@@ -844,10 +1042,14 @@ const LeftNavBar = ({ isCalendarPage }) => {
   });
 
   const scheduleList = schedules.map((schedule) => (
-    <div key={schedule.eventPk} className="Schedule-item">
+    <div
+      key={schedule.eventPk}
+      className="Schedule-item"
+      style={{ borderColor: schedule.color || "#D9D9D9" }}
+    >
       <div
         className="colorTag"
-        style={{ borderLeftColor: schedule.color || "#D9D9D9" }}
+        style={{ backgroundColor: schedule.color || "#D9D9D9" }}
       ></div>
       <div
         className="ScheduleText"
@@ -892,23 +1094,24 @@ const LeftNavBar = ({ isCalendarPage }) => {
 
         {isCalendarPage && (
           <div className="ProjectListContainer">
-            <div className="scheduleTitle">
-              <div className="selectedDate">
-                {isAddingSchedule
-                  ? "일정 추가"
-                  : isEditingSchedule
-                  ? "일정 편집"
-                  : formattedDate}
+            {!isAddingSchedule && (
+              <div className="scheduleTitle">
+                <div className="selectedDate">
+                  {isEditingSchedule ? "일정 편집" : formattedDate}
+                </div>
+                {dateToDisplay &&
+                  !isNaN(dateToDisplay) &&
+                  !isEditingSchedule && ( // 편집 중이 아닐 때만 표시
+                    <div
+                      className="addSchedule"
+                      onClick={handleAddScheduleClick}
+                    >
+                      <img src={plusIcon} alt="plusIcon" />
+                      <div>일정 추가</div>
+                    </div>
+                  )}
               </div>
-              {dateToDisplay &&
-                !isNaN(dateToDisplay) &&
-                !isEditingSchedule && ( // 편집 중이 아닐 때만 표시
-                  <div className="addSchedule" onClick={handleAddScheduleClick}>
-                    <img src={plusIcon} alt="plusIcon" />
-                    <div>일정 추가</div>
-                  </div>
-                )}
-            </div>
+            )}
             <div className="ScheduleContent">
               {isAddingSchedule ? (
                 <AddScheduleForm

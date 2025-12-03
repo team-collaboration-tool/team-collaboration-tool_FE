@@ -21,7 +21,8 @@
   left: 260px;
   right: 0;
   bottom: 60px;
-  padding: 10px;
+  padding-top: 10px;
+  padding-bottom: 10px;
   overflow: hidden;
   box-sizing: border-box;
   background-color: #fefefe;
