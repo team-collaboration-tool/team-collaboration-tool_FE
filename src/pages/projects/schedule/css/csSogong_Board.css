@@ -1,9 +1,11 @@
 /* ========================================================================= */
 /* 2번: 게시판 나열 */
 .GaeSiPan_list {
-    display: block;
+    display: flex;
+    flex-direction: column;
     position: absolute;
-    transform: translate(-50%, 0);
+    transform: translate(-50%, 0) scale(1);
+    transform-origin: top center;
     left: 50%;
     top: 10px;
     bottom: 10px;
@@ -15,29 +17,68 @@
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
     box-sizing: border-box;
     padding: 20px;
+    gap: 10px;
 }
-/* .GaeSiPan_list.on {
-    display: block;
-} */
+@media (max-height:970px) {
+    .GaeSiPan_list {
+        transform: translate(-50%, 0) scale(0.9);
+        transform-origin: top center;
+        bottom: -75px;
+    }
+}
+
+.container_GaeSiPanList {
+    display: flex;
+    width: 100%;
+    height: auto;
+
+    align-items: center;
+    justify-content: center;
+
+
+    /* transform: translate(-50%, 0) scale(1);
+    transform-origin: top center;
+    left: 50%;
+    top: 50px;
+    bottom: 50px; */
+}
 
 #GaeSiPan_list_title {
-    position: absolute;
-    left: 40px;
-    top: 30px;
+    margin-left: 40px;
+    margin-right: auto;
     font-size: 1.875rem;
     font-weight: bold;
-    margin-bottom: 1.5rem;
     color: rgb(0, 0, 0);
     z-index: 2;
+    margin-top: 5px;
 }
 
+#GSP_write {
+    cursor: pointer;
+
+    margin-right: 30px;
+    margin-left: auto;
+    padding: 1rem;
+    white-space: nowrap;
+    height: 40px;
+
+    padding: 0.5rem 1.5rem;
+    background-color: #33A1E0;
+    color: #ffffff;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    border: none;
+    transition: background-color 0.2s;
+    z-index: 2;
+    margin-top: 5px;
+}
 
 #list_write {
-    position: absolute;
-    transform: translate(-50%, 0);
+    transform-origin: top center;
     left: 50%;
     top: 50px;
     bottom: 50px;
@@ -75,15 +116,18 @@
     /* border-bottom: 1px solid rgb(0, 0, 0, 0.2); */
     position: relative;
 }
+
 .post_item::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -0.44rem; /* 컨테이너 바닥에 붙음 */
-  height: 1px;
-  background-color: rgba(0, 0, 0, 0.2);
-  transform: translateY(100%); /* 패딩 바깥쪽으로 내리기 */
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -0.44rem;
+    /* 컨테이너 바닥에 붙음 */
+    height: 1px;
+    background-color: rgba(0, 0, 0, 0.2);
+    transform: translateY(100%);
+    /* 패딩 바깥쪽으로 내리기 */
 }
 
 .post_item:hover {
@@ -108,6 +152,7 @@
     white-space: nowrap;
     text-overflow: ellipsis;
 }
+
 .post_title.RED_title {
     color: rgb(225, 0, 0);
 }
@@ -139,25 +184,6 @@
     font-weight: 600;
 }
 
-#GSP_write {
-    cursor: pointer;
-
-    position: absolute;
-    right: 30px;
-    top: 20px;
-    padding: 1rem;
-    white-space: nowrap;
-
-    padding: 0.5rem 1.5rem;
-    background-color: #33A1E0;
-    color: #ffffff;
-    font-weight: 600;
-    border-radius: 0.5rem;
-    border: none;
-    transition: background-color 0.2s;
-    z-index: 2;
-}
-
 #GSP_write p {
     position: absolute;
     transform: translate(-50%, -50%);
@@ -167,9 +193,8 @@
 }
 
 #GSP_page {
-    position: absolute;
-    left: 50px;
-    bottom: 25px;
+    margin-left: 50px;
+    margin-right: auto;
     width: 540px;
     height: 45px;
     /* background-color: rgb(255, 255, 255);
@@ -182,8 +207,8 @@
 }
 
 .GSP_search_container {
-    position: absolute;
-    right: 50px;
+    margin-left: auto;
+    margin-right: 50px;
     bottom: 20px;
 
     display: flex;
@@ -191,11 +216,8 @@
 }
 
 #GSP_search_box {
-    /* position: absolute;
-    right: 175px;
-    bottom: 25px; */
     width: 250px;
-    height: 37.5px; 
+    height: 37.5px;
 
     display: flex;
     border: 1px solid rgb(0, 0, 0);
@@ -206,10 +228,8 @@
     margin: 10px;
     padding-left: 12.5px;
 }
+
 #GSP_search_button {
-    /* position: absolute;
-    right: 100px;
-    bottom: 30px; */
     width: 50px;
     height: 37.5px;
 
@@ -308,18 +328,20 @@
 /* 작성 페이지 나가기 버튼 */
 #exit_write {
     cursor: pointer;
-
-    position: absolute;
     right: 30px;
     top: 15px;
-    width: 20px;
-    height: 20px;
-    background-color: rgb(255, 255, 255);
-    border: 1px solid rgb(0, 0, 0);
-    border-radius: 2.5px;
-    margin: 0;
-    padding: 0;
-    color: rgb(0, 0, 0);
+
+    display: flex;
+    position: absolute;
+    width: 95px;
+    height: 30px;
+    padding: 0.5rem 1.5rem;
+    /* background-color: #33A1E0; */
+    background-color: rgb(0, 0, 0, 0.5);
+    color: white;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
 }
 
 #exit_write p {
@@ -355,9 +377,11 @@
     justify-content: left;
     border-bottom: 1px solid black;
 }
+
 .GSPW_field_left label[for="file-upload"] {
     margin-left: auto;
 }
+
 .GSPW_field_left_2 {
     margin-bottom: 1rem;
     display: flex;
@@ -403,13 +427,23 @@
     margin-left: 2rem;
 }
 
+.GongJi_over10 {
+    display: none;
+    white-space: nowrap;
+    font-size: 0.85rem;
+    color: red;
+}
+.GongJi_over10.on {
+    display: flex;
+}
+
 .checkbox_label {
     margin-left: 0.5rem;
     margin-right: 2rem;
     display: block;
     font-size: 0.875rem;
     color: #111827;
-    user-select: none; 
+    user-select: none;
 }
 
 .form_file_input::-webkit-file-upload-button {
@@ -450,6 +484,7 @@
     border-radius: 0.5rem;
     border: none;
 }
+
 .GSPW_field_left:has(#is-vote:checked) .GSPW_vote_button {
     display: block;
 }
@@ -543,29 +578,32 @@
 
     text-align: left;
 }
+
 .GaeSiPan_See.on {
     display: block;
 }
 
 /* 작성 페이지 나가기 버튼 */
 #exit_See {
+    left: 45px;
+    top: 15px;
     cursor: pointer;
+
     display: flex;
+    position: absolute;
+    left: 20px;
+    top: 15px;
+    width: 95px;
+    height: 30px;
+    padding: 0.5rem 1.5rem;
+    /* background-color: #33A1E0; */
+    background-color: rgb(0, 0, 0, 0.5);
+    color: white;
     align-items: center;
     justify-content: center;
-    color: rgb(0, 0, 0);
-
-    position: absolute;
-    left: 30px;
-    top: 15px;
-    width: 20px;
-    height: 20px;
-    background-color: rgb(255, 255, 255);
-    border: 1px solid rgb(0, 0, 0);
-    border-radius: 2.5px;
-    margin: 0;
-    padding: 0;
+    white-space: nowrap;
 }
+
 #edit_See {
     cursor: pointer;
     display: flex;
@@ -578,12 +616,15 @@
     top: 15px;
     width: 75px;
     height: 30px;
-    background-color: rgb(255, 255, 255);
-    border: 1px solid rgb(0, 0, 0);
-    border-radius: 2.5px;
+    background-color: #33A1E0;
+    color: #ffffff;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    border: none;
     margin: 0;
     padding: 0;
 }
+
 #delete_See {
     cursor: pointer;
     display: flex;
@@ -596,9 +637,11 @@
     top: 15px;
     width: 75px;
     height: 30px;
-    background-color: rgb(255, 255, 255);
-    border: 1px solid rgb(0, 0, 0);
-    border-radius: 2.5px;
+    background-color: #33A1E0;
+    color: #ffffff;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    border: none;
     margin: 0;
     padding: 0;
 }
@@ -633,12 +676,14 @@
     border-radius: 0.5rem;
     width: 33%;
 }
+
 #GSPS_download_title {
     margin: 1rem;
     font-size: 1rem;
     font-weight: bold;
     color: rgb(0, 0, 0);
 }
+
 .GSPS_download_mode {
     cursor: pointer;
 
@@ -679,6 +724,7 @@
     align-items: center;
     justify-content: center;
 }
+
 #GSPS_content {
     padding: 1rem 1.5rem;
     width: 1500px;
@@ -706,6 +752,7 @@
     border-radius: 4px;
     padding: 20px;
 }
+
 .VOTE_Page.off {
     display: none;
 }
@@ -716,12 +763,14 @@
     margin-bottom: 1rem;
     color: rgb(0, 0, 0);
 }
+
 #VOTE_isitMulti {
     display: block;
     font-size: 16px;
     margin-bottom: 0.25rem;
     color: rgb(0, 0, 0);
 }
+
 #VOTE_isitSecret {
     display: block;
     font-size: 16px;
@@ -731,8 +780,10 @@
 
 .VOTE_choose_container {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* 1:1 비율로 2개의 열 생성 */
-    gap: 10px; /* 선택지 사이의 간격 */
+    grid-template-columns: 1fr 1fr;
+    /* 1:1 비율로 2개의 열 생성 */
+    gap: 10px;
+    /* 선택지 사이의 간격 */
     margin-top: 20px;
     margin-bottom: 20px;
 }
@@ -776,13 +827,17 @@
     border-radius: 4px;
     padding: 20px;
 }
+
 .VOTE_Result.on {
     display: block;
 }
+
 .VoteResult_grid {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* 1:1 비율 2열 */
-    gap: 10px; /* 간격 */
+    grid-template-columns: 1fr 1fr;
+    /* 1:1 비율 2열 */
+    gap: 10px;
+    /* 간격 */
     margin-top: 1rem;
     margin-bottom: 1.5rem;
 }
@@ -826,6 +881,7 @@
     flex-direction: column;
     align-items: center;
 }
+
 .VoteResult_item_WhoVoted.on {
     display: flex;
 }
@@ -868,6 +924,7 @@
     padding: 20px;
     z-index: 3;
 }
+
 .VOTE_Make.on {
     display: block;
 }
@@ -937,6 +994,7 @@
     color: rgb(255, 255, 255);
     background-color: #33A1E0;
 }
+
 #VoteMake_DeleteOption {
     cursor: pointer;
     background-color: rgb(255, 255, 255);
