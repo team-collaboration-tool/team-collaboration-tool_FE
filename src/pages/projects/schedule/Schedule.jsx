@@ -35,7 +35,7 @@ export default function TimeSchedulerPage() {
   const [howDateLong, setHowDateLong] = React.useState("");
   const [timeStart, setTimeStart] = React.useState("09:00");
   const [timeEnd, setTimeEnd] = React.useState("18:00");
-  const [whatName, setWhatName] = React.useState("이름 입력");
+  const [whatName, setWhatName] = React.useState("");
   const [items, setItems] = React.useState([]); // 이거는 위에 5개 데이터를 넣은 배열로 사용
 
 
@@ -106,7 +106,6 @@ export default function TimeSchedulerPage() {
           try {
             const data = JSON.parse(raw);
             console.log("GET : /api/users/me JSON == ", data);
-            // 👇 여기서 내 이메일 저장
             setMyEmail(data.email);
           } catch (err) {
             console.log("JSON 파싱 실패 == ", err);
