@@ -212,9 +212,16 @@ const Setting = () => {
     return userInfo.name.charAt(0);
   };
 
+  const handleGoBack = () => {
+    navigate(-1);
+  };
+
   return (
     <div className="setting-container">
       <div className="setting-content">
+        <button className="back-button" onClick={handleGoBack}>
+          ← 뒤로가기
+        </button>
         <div className="profile-box">
           {/* 프로필 */}
           <div className="profile-avatar">{getInitial()}</div>
