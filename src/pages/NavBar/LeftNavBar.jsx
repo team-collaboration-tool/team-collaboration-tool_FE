@@ -250,15 +250,18 @@ const AddScheduleForm = ({ date, onCancel, onScheduleAdded, projectId }) => {
           </div>
         </div>
       </div>
-      <textarea
-        placeholder="상세 내용"
-        className="formTextarea"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        disabled={loading}
-      />
+      <div className="textContainer">
+        <div className="dateTitle">내용</div>
+        <textarea
+          placeholder="상세 내용"
+          className="formTextarea"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          disabled={loading}
+        />
+      </div>
       <div className="participantSelector">
-        <p className="participantLabel">참가자 선택</p>
+        <div className="dateTitle">참가자</div>
 
         {membersLoading ? (
           // 로딩 중
@@ -300,7 +303,7 @@ const AddScheduleForm = ({ date, onCancel, onScheduleAdded, projectId }) => {
   );
 };
 
-// ✅ 일정 편집 폼 (AddScheduleForm 아래에 추가)
+// 일정 편집 폼 (AddScheduleForm 아래에 추가)
 const EditScheduleForm = ({
   schedule,
   onCancel,
@@ -407,6 +410,11 @@ const EditScheduleForm = ({
       return;
     }
 
+    if (!title.trim()) {
+      alert("일정 제목을 입력해 주세요.");
+      return;
+    }
+
     setLoading(true);
     setSubmitError(null);
 
@@ -453,7 +461,7 @@ const EditScheduleForm = ({
 
   return (
     <div className="AddScheduleForm">
-      <p className="formDate">날짜: {formattedDate}</p>
+      <p className="formDate">일정명 & 태그</p>
       {submitError && <p style={{ color: "red" }}>에러: {submitError}</p>}
 
       <input
@@ -465,86 +473,94 @@ const EditScheduleForm = ({
         disabled={loading}
       />
       <div className="colorSelector">
-        <p className="colorLabel">컬러 태그</p>
-        <div className="colorOptions">
-          {COLOR_OPTIONS.map((option) => (
-            <button
-              key={option.id}
-              type="button"
-              className={`colorOption ${
-                selectedColor === option.color ? "selected" : ""
-              }`}
-              style={{
-                backgroundColor: option.color,
-                border:
-                  selectedColor === option.color
-                    ? "3px solid #000"
-                    : "2px solid #ddd",
-              }}
-              onClick={() => setSelectedColor(option.color)}
-              disabled={loading}
-              aria-label={option.name}
-            />
-          ))}
-        </div>
-      </div>
-      <div className="dateTimeGroup">
-        <div className="dateTimeLabel">시작</div>
-        <div className="dateTimeInputs">
-          <input
-            type="date"
-            className="formInput dateInput"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            disabled={loading}
-          />
-          <select
-            className="formInput timeInput"
-            value={startTime}
-            onChange={(e) => setStartTime(e.target.value)}
-            disabled={loading}
-          >
-            {TIME_OPTIONS.map((time) => (
-              <option key={time} value={time}>
-                {time}
-              </option>
+        <div className="colorTagBorder">
+          <div className="colorOptions">
+            {COLOR_OPTIONS.map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                className={`colorOption ${
+                  selectedColor === option.color ? "selected" : ""
+                }`}
+                style={{
+                  backgroundColor: option.color,
+                  border:
+                    selectedColor === option.color
+                      ? "3px solid #000"
+                      : "2px solid #ddd",
+                }}
+                onClick={() => setSelectedColor(option.color)}
+                disabled={loading}
+                aria-label={option.name}
+              />
             ))}
-          </select>
+          </div>
         </div>
       </div>
-      <div className="dateTimeGroup">
-        <div className="dateTimeLabel">종료</div>
-        <div className="dateTimeInputs">
-          <input
-            type="date"
-            className="formInput dateInput"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            disabled={loading}
-          />
-          <select
-            className="formInput timeInput"
-            value={endTime}
-            onChange={(e) => setEndTime(e.target.value)}
-            disabled={loading}
-          >
-            {TIME_OPTIONS.map((time) => (
-              <option key={time} value={time}>
-                {time}
-              </option>
-            ))}
-          </select>
+      <div className="dateTimeContainer">
+        <div className="dateTitle">일자</div>
+        <div className="dateInputContainer">
+          <div className="dateTimeGroup">
+            <div className="dateTimeInputs">
+              <input
+                type="date"
+                className="dateInput"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                disabled={loading}
+              />
+              <select
+                className="timeInput"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                disabled={loading}
+              >
+                {TIME_OPTIONS.map((time) => (
+                  <option key={time} value={time}>
+                    {time}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="dateTimeGroup">
+            <div className="dateTimeInputs">
+              <input
+                type="date"
+                className="dateInput"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                disabled={loading}
+              />
+              <select
+                className="timeInput"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+                disabled={loading}
+              >
+                {TIME_OPTIONS.map((time) => (
+                  <option key={time} value={time}>
+                    {time}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
         </div>
       </div>
-      <textarea
-        placeholder="상세 내용"
-        className="formTextarea"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        disabled={loading}
-      />
+      <div className="textContainer">
+        <div className="dateTitle">내용</div>
+        <textarea
+          placeholder="상세 내용"
+          className="formTextarea"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          disabled={loading}
+        />
+      </div>
       <div className="participantSelector">
-        <p className="participantLabel">참가자 선택</p>
+        <div className="dateTitle">참가자</div>
+
         {membersLoading ? (
           <p className="loadingText">멤버 로딩 중...</p>
         ) : projectMembers.length > 0 ? (
@@ -590,23 +606,23 @@ const ScheduleDetailView = ({ schedule, onClose, onEdit, onDelete }) => {
   const scheduleStartDate = new Date(schedule.startTime);
   const scheduleEndDate = new Date(schedule.endTime);
 
-  // ✅ 같은 날인지 확인
+  // 같은 날인지 확인
   const isSameDay =
     scheduleStartDate.toDateString() === scheduleEndDate.toDateString();
 
-  // ✅ 시작일 포맷팅
+  // 시작일 포맷팅
   const formattedStartDate = scheduleStartDate.toLocaleDateString("ko-KR", {
     month: "long",
     day: "numeric",
   });
 
-  // ✅ 종료일 포맷팅
+  // 종료일 포맷팅
   const formattedEndDate = scheduleEndDate.toLocaleDateString("ko-KR", {
     month: "long",
     day: "numeric",
   });
 
-  // ✅ 조건부 날짜 표시 (같은 날: 단일 날짜, 다른 날: 범위)
+  // 조건부 날짜 표시 (같은 날: 단일 날짜, 다른 날: 범위)
   const formattedDate = isSameDay
     ? formattedStartDate
     : `${formattedStartDate} ~ ${formattedEndDate}`;
