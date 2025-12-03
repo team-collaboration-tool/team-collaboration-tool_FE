@@ -245,10 +245,8 @@ const Setting = () => {
                 <input
                   type="email"
                   value={userInfo.email}
-                  onChange={(e) =>
-                    handleUserInfoChange("email", e.target.value)
-                  }
-                  disabled={!isEditing}
+                  disabled
+                  title="이메일은 수정 불가능합니다"
                 />
               </div>
 
