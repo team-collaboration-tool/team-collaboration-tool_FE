@@ -8,6 +8,8 @@
 import "../schedule/css/csSogong_Board.css";
 import React from "react";
 import GongJiIcon from "/src/asset/Icon/GongJi.png";
+import { useParams } from "react-router-dom";
+// import axios from "axios";
 
 // baseURL import
 const baseURL =
@@ -16,6 +18,102 @@ const baseURL =
 
 
 export default function Board() {
+
+    // projectPK!!
+    const { projectID } = useParams();
+    const ProjectPK = projectID;
+
+    // userPK!!
+    const [myUserPk, setMyUserPk] = React.useState(null);
+    const [myEmail, setMyEmail] = React.useState(null);
+
+
+    // GET : /api/users/me == 내 이메일 얻기
+    const getMyUserInfo = React.useCallback(() => {
+        const token = localStorage.getItem("token");
+
+        fetch(`${baseURL}/api/users/me`, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+        })
+            .then(async (res) => {
+                console.log(`GET : /api/users/me 응답 코드 == ${res.status}`);
+                const raw = await res.text();
+                console.log("GET : /api/users/me 응답 RAW == ", raw);
+
+                if (res.status === 200) {
+                    try {
+                        const data = JSON.parse(raw);
+                        console.log("GET : /api/users/me JSON == ", data);
+                        setMyEmail(data.email);
+                    } catch (err) {
+                        console.log("JSON 파싱 실패 == ", err);
+                    }
+                } else {
+                    console.error("요청 실패 == ", raw);
+                }
+            })
+            .catch((err) => {
+                console.error("GET : /api/users/me 에러 발생 == ", err);
+            });
+    }, []);
+
+
+    // GET : /api/projects/{projectId} == 프로젝트 멤버들 userPK 찾기
+    const getMyUserPkFromProject = React.useCallback((projectId, myEmail) => {
+        const token = localStorage.getItem("token");
+        fetch(`${baseURL}/api/projects/${projectId}`, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+        })
+            .then(async (res) => {
+                console.log(`GET : /api/projects/${projectId} 응답 코드 == ${res.status}`);
+                const raw = await res.text();
+                console.log("GET : /api/projects/{projectId} RAW == ", raw);
+
+                if (res.status === 200) {
+                    const data = JSON.parse(raw);
+                    console.log("GET : /api/projects/{projectId} JSON == ", data);
+
+                    const members = data.members || [];
+                    const me = members.find(m => m.email === myEmail);
+
+                    if (me) {
+                        console.log("프로젝트 안에서 찾은 나 == ", me);
+                        setMyUserPk(me.userPk);
+                        console.log(`프로젝트 PK == ${ProjectPK}`);
+                        console.log(`user PK == ${me.userPk}`);
+                    } else {
+                        console.warn("members 안에서 내 email과 일치하는 항목을 못 찾았음");
+                    }
+                } else {
+                    console.error("요청 실패 == ", raw);
+                }
+            })
+            .catch((err) => {
+                console.error("GET : /api/projects/{projectId} 에러 발생 == ", err);
+            });
+    }, []);
+
+
+    // =============================================================================
+
+
+    // 이메일로 내 userPK 찾기
+    React.useEffect(() => {
+        getMyUserInfo();
+    }, []);
+    React.useEffect(() => {
+        if (!ProjectPK || !myEmail) return;
+        getMyUserPkFromProject(ProjectPK, myEmail);
+    }, [ProjectPK, myEmail, getMyUserPkFromProject]);
+
 
     // 게시판
     // 목록 | 페이지 | 상세 | 작성 | 투표
@@ -211,6 +309,22 @@ export default function Board() {
         const listContainer = document.getElementById("list_write");
         const pageContainer = document.getElementById("GSP_page");
         const seeContainer = document.querySelector(".GaeSiPan_See");
+        const noticeCheckbox = document.getElementById("is-notice");
+        const over10El = document.querySelector(".GongJi_over10");
+
+        // 공지 10개 체크 막는 거를 새로 체크하는 것만 막아야지, 이미 체크 되어있는 거 푸는 거까지 막으면 우짜노
+        let isNoticeLimitReached = false;
+        if (noticeCheckbox) {
+            let prevChecked = noticeCheckbox.checked;  // 이전 상태 기억
+
+            noticeCheckbox.addEventListener("change", () => {
+                if (isNoticeLimitReached && !prevChecked && noticeCheckbox.checked) {
+                    alert("공지글은 최대 10개까지 등록할 수 있습니다.");
+                    noticeCheckbox.checked = false;
+                }
+                prevChecked = noticeCheckbox.checked;
+            });
+        }
 
         if (!listContainer || !pageContainer || !seeContainer) {
             return () => { };
@@ -223,6 +337,7 @@ export default function Board() {
         const buildPostItem = (post) => {
             const postDiv = document.createElement("div");
             postDiv.className = "post_item";
+            postDiv.dataset.id = post.id;   // 공지글을 위해 따로 저장
 
             const idSpan = document.createElement("span");
             idSpan.className = "post_id";
@@ -316,7 +431,7 @@ export default function Board() {
             // UI의 페이지는 1부터 시작, API는 0부터 시작
             const apiPage = page - 1;
             const token = localStorage.getItem("token");
-            const projectPk = 1; // TODO: 실제 projectPk로 변경 필요
+            const projectPk = ProjectPK; // TODO: 실제 projectPk로 변경 필요
 
             console.log(`GET : /api/posts 요청 (Page: ${page}) / 보내는 내용 == ${projectPk}&page=${apiPage}&size=10`);
 
@@ -346,9 +461,24 @@ export default function Board() {
                             hasFile: p.hasFile
                         }));
 
-                        renderPosts(uiPosts);
-                        renderPagination(page, data.totalPages || 1); // API가 주는 총 페이지 수 사용
+                        if (page === 1 && uiPosts.length === 10) {
+                            const noticeCount = uiPosts.filter(p => p.isNotice).length;
 
+
+                            // 공지 개수 10개 over인 경우,
+                            if (noticeCount === 10) {
+                                if (over10El) over10El.classList.add("on");
+                                isNoticeLimitReached = true;
+                            } else {
+                                if (over10El) over10El.classList.remove("on");
+                                isNoticeLimitReached = false;
+                            }
+                        } else {
+                            if (over10El) over10El.classList.remove("on");
+                            isNoticeLimitReached = false;
+                        }
+                        renderPosts(uiPosts);
+                        renderPagination(page, data.totalPages || 1);
                     } else {
                         console.warn(`GET : /api/posts 실패 code:${res.status} -> Mock Data 사용`);
                         useMockData(page);
@@ -535,7 +665,7 @@ export default function Board() {
 
             seeContainer.innerHTML = `
         <div class="GSPS_field">
-            <button id="exit_See">X</button>
+            <button id="exit_See">뒤로가기</button>
             <button id="edit_See">수정</button>
             <button id="delete_See">삭제</button>
         </div>
@@ -709,7 +839,7 @@ export default function Board() {
                 });
             }
 
-            
+
             // PUT : /api/votes/options == 재투표하기
             if (revoteBtn) {
                 revoteBtn.addEventListener("click", () => {
@@ -744,8 +874,10 @@ export default function Board() {
             const item = e.target.closest(".post_item");
             if (!item) return;
 
-            const idEl = item.querySelector(".post_id");
-            const clickedId = idEl?.textContent?.trim();
+            // const idEl = item.querySelector(".post_id");
+            // const clickedId = idEl?.textContent?.trim();
+            const clickedId = item.dataset.id;
+
             if (!clickedId) return;
             const token = localStorage.getItem("token");
 
@@ -810,12 +942,24 @@ export default function Board() {
             const content = contentEl && contentEl.value;
             const hasVoting = isVoteEl && isVoteEl.checked;
 
+            // 공지 개수 10개 over인 경우,
+            if (
+              isNoticeLimitReached &&
+              isNotice &&
+              (
+                !isEditMode ||
+                (isEditMode && !editOriginalIsNotice)
+              )
+            ) {
+              alert("공지글은 최대 10개까지 등록할 수 있습니다.");
+              return;
+            }
+
             if (!title || !content) {
                 alert("제목과 본문을 모두 입력해주세요.");
                 return;
             }
 
-            // 투표를 체크했는데, 데이터가 없는 경우 방지
             if (hasVoting && !tempVoteData) {
                 alert("투표 추가를 선택하셨으면 투표 내용을 설정해주세요.");
                 return;
@@ -832,7 +976,16 @@ export default function Board() {
                     isNotice: isNotice,
                 };
                 const formData = new FormData();
-                formData.append("post", new Blob([JSON.stringify(putPayload)], { type: "application/json" }));
+                formData.append(
+                    "post",
+                    new Blob([JSON.stringify(putPayload)], { type: "application/json" })
+                );
+
+                if (files && files.length > 0) {
+                    Array.from(files).forEach((file) => {
+                        formData.append("files", file);
+                    });
+                }
 
                 if (files && files.length > 0) {
                     Array.from(files).forEach((file) => {
@@ -880,7 +1033,7 @@ export default function Board() {
 
                             // PATCH : /api/posts/{postId}/notice == 공지사항 등록
                             else if (!editOriginalIsNotice && isNotice) {
-                                console.log("🚀 공지사항 등록 요청 시작");
+                                console.log("공지사항 등록 요청 시작");
                                 fetch(`${baseURL}/api/posts/${editTargetId}/notice`, {
                                     method: "PATCH",
                                     headers: { "Authorization": `Bearer ${token}` },
@@ -921,7 +1074,7 @@ export default function Board() {
             // ========================================================================
             // POST : /api/posts == 게시글 작성
             const postPayload = {
-                projectPk: 1, // TODO: 실제값 교체
+                projectPk: ProjectPK, // TODO: 실제값 교체
                 title: title,
                 content: content,
                 isNotice: isNotice,
@@ -936,11 +1089,31 @@ export default function Board() {
                 } : {})
             };
             const formData = new FormData();
-            formData.append("post", new Blob([JSON.stringify(postPayload)], { type: "application/json" }));
-            const token = localStorage.getItem("token");
-            console.log("POST : /api/posts 보내는 내용 == ", postPayload);
-            const createPostUrl = `${baseURL}/api/posts?projectPk=${postPayload.projectPk}`;
+            formData.append(
+                "post",
+                new Blob([JSON.stringify(postPayload)], { type: "application/json" })
+            );
 
+            if (files && files.length > 0) {
+                Array.from(files).forEach((file) => {
+                    formData.append("files", file);
+                });
+            }
+            const token = localStorage.getItem("token");
+            console.log("지금 니 JWT 토큰 == ", token);
+            console.log("POST : /api/posts 보내는 JSON 내용 == ", postPayload);     // 게시글 내용 console log
+            console.log("POST : /api/posts 실제 FormData 내용 ↓↓↓");                // 첨부파일 내용 console log
+
+            for (const [key, value] of formData.entries()) {
+                if (value instanceof File) {
+                    console.log(` -> ${key} = File(name=${value.name}, size=${value.size} bytes)`);
+                } else {
+                    console.log(` -> ${key} = ${value}`);
+                }
+            }
+
+
+            const createPostUrl = `${baseURL}/api/posts`;
             fetch(createPostUrl, {
                 method: "POST",
                 headers: { "Authorization": `Bearer ${token}` },
@@ -963,79 +1136,36 @@ export default function Board() {
                     if (data && data.postPk) {
                         const newPostId = data.postPk;
 
-
-                        // POST : /api/posts/{postId}/attachments == 첨부파일 첨부
-                        const fileUploadPromise = new Promise((resolve, reject) => {
-                            if (files && files.length > 0) {
-                                const attachmentFormData = new FormData();
-                                Array.from(files).forEach((file) => {
-                                    attachmentFormData.append("files", file);
-                                });
-
-                                console.log("POST : /api/posts/{postId}/attachments 보내는 내용 == ");
-                                for (let [key, value] of attachmentFormData.entries()) {
-                                    console.log(`   Key: ${key}, Value:`, value);
-                                }
-
-                                fetch(`${baseURL}/api/posts/${newPostId}/attachments`, {
-                                    method: "POST",
-                                    headers: { "Authorization": `Bearer ${token}` },
-                                    body: attachmentFormData,
-                                })
-                                    .then(async (fileRes) => {
-                                        const resultText = await fileRes.text();
-                                        console.log(`POST : /api/posts/{postId}/attachments 응답 == (${fileRes.status}):`, resultText);
-
-                                        if (fileRes.status === 200) resolve("파일 업로드 성공");
-                                        else reject(`파일 업로드 실패 (${fileRes.status}): ${resultText}`);
-                                    })
-                                    .catch(reject);
-                            } else {
-                                resolve("파일 없음 (Skip)");
-                            }
-                        });
-
-
-                        // PATCH : /api/posts/{postId}/notice == 공지사항 등록
-                        const noticePromise = new Promise((resolve, reject) => {
-                            if (isNotice) {
-                                fetch(`${baseURL}/api/posts/${newPostId}/notice`, {
-                                    method: "PATCH",
-                                    headers: { "Authorization": `Bearer ${token}` },
-                                })
-                                    .then(async (noticeRes) => {
-                                        const resultText = await noticeRes.text();
-                                        console.log(`PATCH : /api/posts/{postId}/notice 응답 == (${noticeRes.status}):`, resultText);
-
-                                        if (noticeRes.status === 200) resolve("공지 설정 성공");
-                                        else reject(`공지 설정 실패 (${noticeRes.status})`);
-                                    })
-                                    .catch(reject);
-                            } else {
-                                resolve("공지 아님 (Skip)");
-                            }
-                        });
-
-                        // 후속 작업 병렬 처리
-                        Promise.allSettled([fileUploadPromise, noticePromise]).then((results) => {
-                            const fileResult = results[0];
-                            const noticeResult = results[1];
-
-                            let msg = "게시글 작성이 완료되었습니다.";
-
-                            if (fileResult.status === 'rejected') {
-                                console.error("파일 에러:", fileResult.reason);
-                                msg += "\n(단, 파일 업로드에 실패했습니다. 로그를 확인하세요)";
-                            }
-                            if (noticeResult.status === 'rejected') {
-                                console.error("공지 에러:", noticeResult.reason);
-                                msg += "\n(단, 공지 설정에 실패했습니다. 로그를 확인하세요)";
-                            }
-
-                            alert(msg);
+                        // PATCH : /api/posts/{postId}/notice == 공지사항 등록 (필요 시)
+                        const afterCreate = () => {
+                            alert("게시글 작성이 완료되었습니다.");
                             onCloseWrite();
-                            loadPostList(currentPage); // 리스트 갱신
-                        });
+                            loadPostList(currentPage);
+                        };
+
+                        if (isNotice) {
+                            fetch(`${baseURL}/api/posts/${newPostId}/notice`, {
+                                method: "PATCH",
+                                headers: { "Authorization": `Bearer ${token}` },
+                            })
+                                .then(async (noticeRes) => {
+                                    const resultText = await noticeRes.text();
+                                    console.log(`PATCH : /api/posts/${newPostId}/notice 응답 == (${noticeRes.status}):`, resultText);
+
+                                    if (noticeRes.status !== 200) {
+                                        console.error("공지 설정 실패", noticeRes.status);
+                                        alert("게시글은 작성되었지만 공지 설정에 실패했습니다.");
+                                    }
+                                    afterCreate();
+                                })
+                                .catch((err) => {
+                                    console.error("예외처리! PATCH : /api/posts/{postId}/notice == ", err);
+                                    alert("게시글은 작성되었지만 공지 설정 중 오류가 발생했습니다.");
+                                    afterCreate();
+                                });
+                        } else {
+                            afterCreate();
+                        }
 
                     } else {
                         console.error("게시글 생성 로직 오류 (postPk 없음):", data);
@@ -1197,25 +1327,29 @@ export default function Board() {
         <>
             {/* 2번: 게시판 나열 기능 */}
             <div className="GaeSiPan_list">
-                <h1 id="GaeSiPan_list_title"><b>게시판</b></h1>
-                <button id="GSP_write">게시글 작성</button>
-                <div id="list_write">
-                    <div className="post_header">
-                        <span className="post_id">번호</span>
-                        <span className="post_title">제목</span>
-                        <span className="post_author">작성자</span>
-                        <span className="post_timestamp">작성일자</span>
-                        <span className="post_ishaveVote">투표</span>
-                        <span className="post_ishavefile">파일</span>
-                    </div>
-
+                <div class="container_GaeSiPanList">
+                    <h1 id="GaeSiPan_list_title"><b>게시판</b></h1>
+                    <button id="GSP_write">게시글 작성</button>
                 </div>
-                <div id="GSP_page"></div>
-
-                {/* 검색 = 제목 및 작성자로 검색 */}
-                <div className="GSP_search_container">
-                    <input type="text" id="GSP_search_box" placeholder="제목 및 작성자로 검색" />
-                    <button id="GSP_search_button">검색</button>
+                <div class="container_GaeSiPanList">
+                    <div id="list_write">
+                        <div className="post_header">
+                            <span className="post_id">번호</span>
+                            <span className="post_title">제목</span>
+                            <span className="post_author">작성자</span>
+                            <span className="post_timestamp">작성일자</span>
+                            <span className="post_ishaveVote">투표</span>
+                            <span className="post_ishavefile">파일</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="container_GaeSiPanList">
+                    <div id="GSP_page"></div>
+                    {/* 검색 = 제목 및 작성자로 검색 */}
+                    <div className="GSP_search_container">
+                        <input type="text" id="GSP_search_box" placeholder="제목 및 작성자로 검색" />
+                        <button id="GSP_search_button">검색</button>
+                    </div>
                 </div>
 
                 <div id="GSP_blurScreen"></div>
@@ -1223,7 +1357,7 @@ export default function Board() {
 
             {/* 3번: 게시글 작성 기능 */}
             <div className="GaeSiPan_Write">
-                <button id="exit_write"><p>X</p></button>
+                <button id="exit_write"><p>뒤로가기</p></button>
                 <h1 id="GSPW_head">게시글 작성</h1>
 
                 <div className="GSPW_field">
@@ -1238,12 +1372,16 @@ export default function Board() {
                         <input type="checkbox" id="is-notice" />
                         <label htmlFor="is-notice" className="checkbox_label">공지사항 유무</label>
                     </div>
+                    <div className="GongJi_over10">공지글 개수는 최대 10개 입니다.</div>
+
+
                     {/* 체크박스 == 투표추가 */}
                     <div className="checkbox_container">
                         <input type="checkbox" id="is-vote" />
                         <label htmlFor="is-vote" className="checkbox_label">투표 추가</label>
                     </div>
                     <button className="GSPW_vote_button">투표 추가</button>
+
                     {/* 버튼 == 첨부파일 */}
                     <label htmlFor="file-upload" className="form_label">첨부파일</label>
                     <input type="file" id="file-upload" multiple className="form_file_input" />
