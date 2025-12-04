@@ -9,7 +9,6 @@ import CopyIcon from "../../../asset/project_setting_icon/copy.svg";
 import DeleteIcon from "../../../asset/project_setting_icon/delete.svg";
 import CheckCircleIcon from "../../../asset/project_setting_icon/check-circle.svg";
 import PermissionTransferIcon from "../../../asset/project_setting_icon/permission-transfer.svg";
-import CautionIcon from "../../../asset/project_setting_icon/caution.svg";
 
 const API_URL = import.meta.env.VITE_DEV_PROXY_URL;
 
