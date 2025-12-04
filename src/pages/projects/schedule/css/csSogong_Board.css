@@ -397,6 +397,7 @@
 
 .GSPW_field_left label[for="file-upload"] {
     margin-left: auto;
+    display: none;
 }
 
 .GSPW_field_left_2 {
@@ -442,6 +443,7 @@
     display: flex;
     align-self: center;
     margin-left: 2rem;
+    margin-bottom: 1rem;
 }
 
 .GongJi_over10 {
@@ -476,10 +478,16 @@
     background-color: rgb(0, 0, 0, 0.05);
     color: #33A1E0;
     cursor: pointer;
+    display: none;
 }
 
 .form_file_input::-webkit-file-upload-button:hover {
     background-color: #e0e7ff;
+    display: none;
+}
+
+#file-upload {
+    display: none;
 }
 
 .button_container {
