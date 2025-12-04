@@ -311,22 +311,11 @@
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
-}
-
-.ps-delete-btn {
   background: #ff3b30;
   color: #ffffff;
 }
 
-.ps-delete-btn:hover {
-  background: #e62e24;
-}
-
-.ps-leave-btn {
-  background: #e0e0e0;
-  color: #333;
-}
-
+.ps-delete-btn:hover,
 .ps-leave-btn:hover {
-  background: #d0d0d0;
+  background: #e62e24;
 }
