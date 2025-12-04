@@ -351,14 +351,19 @@ export default function Board() {
         const buildPostItem = (post) => {
             const postDiv = document.createElement("div");
             postDiv.className = "post_item";
-            postDiv.dataset.id = post.id;   // 공지글을 위해 따로 저장
+            // dataset.id는 항상 PK(서버 postPk)를 사용
+            postDiv.dataset.id = post.id;
 
             const idSpan = document.createElement("span");
             idSpan.className = "post_id";
-            idSpan.textContent = post.id;
             postDiv.appendChild(idSpan);
 
-            // 공지글이면, 글번호 대신 공지 아이콘으로
+            // 화면상 보이는 번호
+            const displayNumber = (typeof post.postNumber !== "undefined" && post.postNumber !== null)
+                ? post.postNumber
+                : post.id;
+
+            // 공지글이면 아이콘 표시, 아니면 번호 표시
             if (post.isNotice) {
                 const img = document.createElement("img");
                 img.src = GongJiIcon;
@@ -368,10 +373,10 @@ export default function Board() {
                 idSpan.style.display = "flex";
                 idSpan.style.alignItems = "center";
                 idSpan.style.justifyContent = "center";
-                idSpan.textContent = "";    // 글번호 제거
+                idSpan.textContent = "";
                 idSpan.appendChild(img);
             } else {
-                idSpan.textContent = post.id;
+                idSpan.textContent = displayNumber;
             }
 
             const titleSpan = document.createElement("span");
@@ -474,7 +479,8 @@ export default function Board() {
                         console.log("GET : /api/posts 성공 코드 200 == ", data);
 
                         const uiPosts = data.content.map(p => ({
-                            id: p.postPk,
+                            id: p.postPk,              // 실제 PK (API 호출용)
+                            postNumber: p.postNumber,  // 화면상 보이는 번호
                             title: p.title,
                             content: p.content,
                             author: p.authorName,
@@ -536,8 +542,10 @@ export default function Board() {
             // XML 데이터를 UI 형식으로 변환
             const uiPosts = postsArray.map(p => {
                 const val = (tag) => p.getElementsByTagName(tag)[0]?.textContent || "";
+                const idText = val("id");
                 return {
-                    id: val("id"),
+                    id: idText,                 // 실제 PK 대용
+                    postNumber: idText,         // 화면상 보이는 번호
                     title: val("title"),
                     content: val("content"),
                     author: val("author"),
@@ -548,31 +556,29 @@ export default function Board() {
                 };
             });
 
-            // Mock 데이터는 이미 10개씩 잘려있으므로 그대로 렌더링
             renderPosts(uiPosts);
             renderPagination(page, MAX_MOCK_PAGES);
         };
+
         // 검색 버튼 클릭 시
         let currentSearch = { keyword: "", searchType: "" };
         const onSearchClick = () => {
             if (!searchInput) return;
 
             const keyword = searchInput.value.trim();
+            const searchType = searchTypeSelect ? searchTypeSelect.value : "TITLE";
+            currentPage = 1;
+
+            // 검색어가 없으면 전체 게시글 목록 요청
             if (!keyword) {
-                alert("검색어를 입력해주세요.");
+                currentSearch = { keyword: "", searchType: "" };
+                loadPostList(1, currentSearch);
                 return;
             }
-
-            const searchType = searchTypeSelect ? searchTypeSelect.value : "TITLE";
-
             // 검색 상태 저장
-            currentPage = 1;
             currentSearch = { keyword, searchType };
-
-            // 1페이지부터 검색된 리스트 로드
             loadPostList(1, currentSearch);
         };
-
         searchButton && searchButton.addEventListener("click", onSearchClick);
 
 
@@ -894,7 +900,7 @@ export default function Board() {
             const isAnonymous = !!(post.vote && post.vote.isAnonymous);
 
             if (completeBtn) {
-                // POST / PUT : /api/votes/options/{optionId}/cast
+                // POST / PUT : /api/votes/options/{optionId}/cast == 투표
                 completeBtn.addEventListener("click", () => {
                     const checkedInputs = Array.from(
                         seeContainer.querySelectorAll('input[name="VOTE_item_check"]:checked')
@@ -1193,8 +1199,6 @@ export default function Board() {
             }
 
 
-            // ========================================================================
-            // POST : /api/posts == 게시글 작성
             // ========================================================================
             // POST : /api/posts == 게시글 작성
             const postPayload = {
