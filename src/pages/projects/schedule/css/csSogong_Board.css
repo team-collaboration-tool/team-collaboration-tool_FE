@@ -23,6 +23,7 @@
     padding: 20px;
     gap: 10px;
 }
+
 @media (max-height:970px) {
     .GaeSiPan_list {
         transform: translate(-50%, 0) scale(0.9);
@@ -320,9 +321,14 @@
 
     z-index: 4;
 }
-
 .GaeSiPan_Write.on {
     display: block;
+}
+/* 게시글 수정일 때, 투표 체크박스 버튼 숨기기 */
+.GaeSiPan_Write.edit-mode #is-vote,
+.GaeSiPan_Write.edit-mode label[for="is-vote"],
+.GaeSiPan_Write.edit-mode .GSPW_vote_button {
+    display: none !important;
 }
 
 /* 작성 페이지 나가기 버튼 */
@@ -433,6 +439,7 @@
     font-size: 0.85rem;
     color: red;
 }
+
 .GongJi_over10.on {
     display: flex;
 }
@@ -625,6 +632,10 @@
     padding: 0;
 }
 
+#edit_See.off {
+    display: none;
+}
+
 #delete_See {
     cursor: pointer;
     display: flex;
@@ -644,6 +655,10 @@
     border: none;
     margin: 0;
     padding: 0;
+}
+
+#delete_See.off {
+    display: none;
 }
 
 #GSPS_head {
@@ -866,32 +881,59 @@
     cursor: pointer;
 }
 
+/* 누가 투표했는지 결과창 */
 .VoteResult_item_WhoVoted {
     position: absolute;
-    right: -140px;
-    top: 0;
-    z-index: 1;
-
-    width: 100px;
-    border: 1px solid rgb(0, 0, 0);
-    border-radius: 0.5rem;
-    background-color: rgb(0, 0, 0, 0.2);
+    /* VoteResult_item 기준으로 위치하기 */
+    top: 50%;
+    right: 10px;
+    transform: translate(110%, -50%);
+    z-index: 10;
+    width: 120px;
+    max-height: 160px;
 
     display: none;
     flex-direction: column;
-    align-items: center;
-}
+    align-items: flex-start;
+    gap: 4px;
 
+    padding: 8px 10px;
+    border: 1px solid rgba(0, 0, 0, 0.8);
+    border-radius: 8px;
+    background-color: #ffffff;
+    color: #000000;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    box-sizing: border-box;
+
+    overflow-y: auto;
+    /* 인원이 많으면 스크롤 */
+}
 .VoteResult_item_WhoVoted.on {
     display: flex;
 }
+/* before, after == 디자인적 요소 */
+.VoteResult_item_WhoVoted::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: -6px;
+    transform: translateY(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: transparent #ffffff transparent transparent;
+}
+.VoteResult_item_WhoVoted::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: -7px;
+    transform: translateY(-50%);
 
-/* .VoteResult_item_Gage {
-    margin-top: 0.5rem;
-    height: 10px;
-    border: 1px solid rgb(0, 0, 0);
-    border-radius: 0.25rem;
-} */
+    border-width: 7px;
+    border-style: solid;
+    border-color: transparent rgba(0, 0, 0, 0.8) transparent transparent;
+    z-index: -1;
+}
 
 .VoteResult_revote_button {
     cursor: pointer;
