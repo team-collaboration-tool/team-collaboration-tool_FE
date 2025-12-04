@@ -1120,7 +1120,7 @@ export default function Board() {
                         formData.append("files", file);
                     });
                 }
-                console.log("PUT : /api/posts/{postId} FormData 전송 시작");
+                console.log(`PUT : /api/posts/{postId} FormData == ${formData}`);
 
                 fetch(`${baseURL}/api/posts/${editTargetId}`, {
                     method: "PUT",
