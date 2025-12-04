@@ -322,6 +322,10 @@ export default function Board() {
         const noticeCheckbox = document.getElementById("is-notice");
         const over10El = document.querySelector(".GongJi_over10");
 
+        const searchInput = document.getElementById("GSP_search_box");
+        const searchButton = document.getElementById("GSP_search_button");
+        const searchTypeSelect = document.getElementById("GSP_search_type");
+
         // 공지 10개 체크 막는 거를 새로 체크하는 것만 막아야지, 이미 체크 되어있는 거 푸는 거까지 막으면 우짜노
         let isNoticeLimitReached = false;
         if (noticeCheckbox) {
@@ -437,15 +441,26 @@ export default function Board() {
 
         // ============================================================
         // GET : /api/posts == 게시글 리스트 요청
-        const loadPostList = (page) => {
+        const loadPostList = (page, searchOptions = currentSearch) => {
             // UI의 페이지는 1부터 시작, API는 0부터 시작
             const apiPage = page - 1;
             const token = localStorage.getItem("token");
-            const projectPk = ProjectPK; // TODO: 실제 projectPk로 변경 필요
+            const projectPk = ProjectPK;
 
-            console.log(`GET : /api/posts 요청 (Page: ${page}) / 보내는 내용 == ${projectPk}&page=${apiPage}&size=10`);
+            // 쿼리 파라미터 구성
+            const params = new URLSearchParams();
+            params.set("projectPk", projectPk);
+            params.set("page", apiPage);
+            params.set("size", 10);
 
-            fetch(`${baseURL}/api/posts?projectPk=${projectPk}&page=${apiPage}&size=10`, {
+            // 검색 옵션이 있으면 keyword + searchType 추가
+            if (searchOptions && searchOptions.keyword) {
+                params.set("keyword", searchOptions.keyword);
+                params.set("searchType", searchOptions.searchType || "TITLE");
+            }
+            console.log(`GET : /api/posts 요청 (Page: ${page}) / 쿼리 == ${params.toString()}`);
+
+            fetch(`${baseURL}/api/posts?${params.toString()}`, {
                 method: "GET",
                 headers: {
                     "Authorization": `Bearer ${token}`,
@@ -455,11 +470,9 @@ export default function Board() {
                 .then(async (res) => {
                     console.log(`GET : /api/posts 응답 코드 == ${res.status}`);
                     if (res.status === 200) {
-                        // [CASE 1] API 성공
                         const data = await res.json();
                         console.log("GET : /api/posts 성공 코드 200 == ", data);
 
-                        // API 데이터를 UI 형식으로 변환
                         const uiPosts = data.content.map(p => ({
                             id: p.postPk,
                             title: p.title,
@@ -471,11 +484,10 @@ export default function Board() {
                             hasFile: p.hasFile
                         }));
 
+                        // 공지 10개 로직 그대로 유지
                         if (page === 1 && uiPosts.length === 10) {
                             const noticeCount = uiPosts.filter(p => p.isNotice).length;
 
-
-                            // 공지 개수 10개 over인 경우,
                             if (noticeCount === 10) {
                                 if (over10El) over10El.classList.add("on");
                                 isNoticeLimitReached = true;
@@ -487,6 +499,7 @@ export default function Board() {
                             if (over10El) over10El.classList.remove("on");
                             isNoticeLimitReached = false;
                         }
+
                         renderPosts(uiPosts);
                         renderPagination(page, data.totalPages || 1);
                     } else {
@@ -539,6 +552,28 @@ export default function Board() {
             renderPosts(uiPosts);
             renderPagination(page, MAX_MOCK_PAGES);
         };
+        // 검색 버튼 클릭 시
+        let currentSearch = { keyword: "", searchType: "" };
+        const onSearchClick = () => {
+            if (!searchInput) return;
+
+            const keyword = searchInput.value.trim();
+            if (!keyword) {
+                alert("검색어를 입력해주세요.");
+                return;
+            }
+
+            const searchType = searchTypeSelect ? searchTypeSelect.value : "TITLE";
+
+            // 검색 상태 저장
+            currentPage = 1;
+            currentSearch = { keyword, searchType };
+
+            // 1페이지부터 검색된 리스트 로드
+            loadPostList(1, currentSearch);
+        };
+
+        searchButton && searchButton.addEventListener("click", onSearchClick);
 
 
         // 페이지 클릭 이벤트
@@ -551,13 +586,12 @@ export default function Board() {
             if (!Number.isFinite(toPage) || toPage === currentPage) return;
 
             currentPage = toPage;
-            // 페이지 클릭 시 데이터 새로 로드 (대공사 핵심)
-            loadPostList(currentPage);
+            loadPostList(currentPage, currentSearch);  // 페이지 리프레쉬
         };
         pageContainer.addEventListener("click", onPageClick);
 
         // 초기 로딩 (1페이지)
-        loadPostList(1);
+        loadPostList(1, currentSearch);
 
 
         // ============================================================
@@ -598,7 +632,7 @@ export default function Board() {
             // 투표 결과 화면 (재투표하기 버튼 있는 거)
             const resultsHTML = options.map((opt) => {
                 const count = opt.count || 0;
-                const whoList = opt.whoVoted || [];
+                const whoList = opt.voters || [];   // 반환값에 맞게 이름 수정
                 const whoHTML = whoList
                     .map(name => `<div>${escapeHTML(name)}</div>`)
                     .join("");
@@ -1442,10 +1476,21 @@ export default function Board() {
                 </div>
                 <div class="container_GaeSiPanList">
                     <div id="GSP_page"></div>
-                    {/* 검색 = 제목 및 작성자로 검색 */}
+
+                    {/* 검색 = 제목 or 작성자로 검색 */}
                     <div className="GSP_search_container">
-                        <input type="text" id="GSP_search_box" placeholder="제목 및 작성자로 검색" />
-                        <button id="GSP_search_button">검색</button>
+                        <select id="GSP_search_type" className="GSP_search_select">
+                            <option value="TITLE">제목</option>
+                            <option value="AUTHOR">작성자</option>
+                        </select>
+                        <input
+                            id="GSP_search_box"
+                            type="text"
+                            placeholder="검색어를 입력하세요"
+                        />
+                        <button id="GSP_search_button" type="button">
+                            검색
+                        </button>
                     </div>
                 </div>
 
