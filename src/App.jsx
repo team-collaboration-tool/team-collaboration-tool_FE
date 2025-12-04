@@ -13,7 +13,6 @@ import Setting from "./pages/main/Setting";
 import Layout from "./Layout";
 
 // pages/projects/project
-import Project from "./pages/projects/project/Project";
 import ProjectSetting from "./pages/projects/project/ProjectSetting";
 
 // pages/projects/calendar
@@ -21,13 +20,9 @@ import Calendar from "./pages/projects/calendar/Calendar";
 
 // pages/projects/board
 import Board from "./pages/projects/board/Board";
-import BoardDetail from "./pages/projects/board/BoardDetail";
-import AddBoard from "./pages/projects/board/AddBoard";
 
 // pages/projects/schedule
 import Schedule from "./pages/projects/schedule/Schedule";
-import AddSchedule from "./pages/projects/schedule/AddSchedule";
-import ScheduleDetail from "./pages/projects/schedule/ScheduleDetail";
 
 // pages/NotFound
 import NotFound from "./pages/NotFound";
@@ -61,15 +56,11 @@ const App = () => {
           {/* 게시판 라우트 */}
           <Route path="board">
             <Route index element={<Board />} />
-            <Route path="create" element={<AddBoard />} />
-            <Route path=":PostID" element={<BoardDetail />} />
           </Route>
 
           {/* 일정 조율 라우트 */}
           <Route path="schedule">
             <Route index element={<Schedule />} />
-            <Route path="add" element={<AddSchedule />} />
-            <Route path=":scheduleID" element={<ScheduleDetail />} />
           </Route>
         </Route>
 
