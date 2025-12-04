@@ -9,7 +9,6 @@ import CopyIcon from "../../../asset/project_setting_icon/copy.svg";
 import DeleteIcon from "../../../asset/project_setting_icon/delete.svg";
 import CheckCircleIcon from "../../../asset/project_setting_icon/check-circle.svg";
 import PermissionTransferIcon from "../../../asset/project_setting_icon/permission-transfer.svg";
-import CautionIcon from "../../../asset/project_setting_icon/caution.svg";
 
 const API_URL = import.meta.env.VITE_DEV_PROXY_URL;
 
@@ -433,9 +432,12 @@ const ProjectSetting = () => {
       {/* 프로젝트 나가기 모달 */}
       <ConfirmWithInputModal
         isOpen={leaveProjectModal}
-        title="정말 프로젝트를 나가시겠습니까?"
-        highlightText="프로젝트를 나가시겠습니까"
-        description={["나간 후 다시 참여하려면 초대가 필요합니다."]}
+        title="나가시겠습니까?"
+        highlightText="나가시겠습니까"
+        description={[
+          "프로젝트를 나갈 시 사용자와 관련된 기록은 삭제되지 않습니다.",
+          "정말로 나가시겠습니까?"
+        ]}
         placeholder="프로젝트명을 입력해주세요"
         inputType="text"
         requiredValue={projectData.name}
