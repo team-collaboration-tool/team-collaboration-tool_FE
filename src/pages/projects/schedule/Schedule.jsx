@@ -29,9 +29,18 @@ export default function TimeSchedulerPage() {
     return () => { try { delete window.swtich_list; } catch (_) { } };
   }, []);
 
+  // 오늘 날짜로 띄우기
+  const getTodayString = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0"); // 월은 0부터 시작하므로 +1
+    const day = String(today.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  };
 
   // 시간조율표 입력값 5가지
-  const [whenDateStart, setWhenDateStart] = React.useState("2025-10-01");
+  const [whenDateStart, setWhenDateStart] = React.useState(getTodayString());
   const [howDateLong, setHowDateLong] = React.useState("");
   const [timeStart, setTimeStart] = React.useState("09:00");
   const [timeEnd, setTimeEnd] = React.useState("18:00");
