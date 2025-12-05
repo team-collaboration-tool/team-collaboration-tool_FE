@@ -1,5 +1,11 @@
 import React from "react";
-import { Routes, Route, BrowserRouter } from "react-router-dom";
+import {
+  Routes,
+  Route,
+  BrowserRouter,
+  Navigate,
+  Outlet,
+} from "react-router-dom";
 
 // pages/auth
 import Login from "./pages/auth/Login";
@@ -30,37 +36,56 @@ import NotFound from "./pages/NotFound";
 // css
 import "./App.css";
 
+const PrivateRoute = () => {
+  const isLogin = !!localStorage.getItem("token");
+
+  if (!isLogin) {
+    alert("로그인 후 이용해주시길 바랍니다.");
+    return <Navigate to="/" replace />;
+  }
+  return <Outlet />;
+};
+
+const PublicRoute = () => {
+  const isLogin = !!localStorage.getItem("token");
+  return isLogin ? <Navigate to="/dashboard" replace /> : <Outlet />;
+};
+
 const App = () => {
   return (
     <BrowserRouter>
       <Routes>
-        {/* 인증 관련 라우트 */}
-        <Route path="/" element={<Login />} />
-        <Route path="/sign/1" element={<SignUp />} />
-
-        {/* 메인 대시보드 */}
-        <Route element={<Layout showPageNav={false} />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/setting" element={<Setting />} />
+        <Route element={<PublicRoute />}>
+          {/* 인증 관련 라우트 */}
+          <Route path="/" element={<Login />} />
+          <Route path="/sign/1" element={<SignUp />} />
         </Route>
 
-        {/* 프로젝트 라우트 */}
-        <Route
-          path="/project/:projectID"
-          element={<Layout showPageNav={true} />}
-        >
-          <Route index element={<Calendar />} />
-          <Route path="setting" element={<ProjectSetting />} />
-          <Route path="calendar" element={<Calendar />} />
-
-          {/* 게시판 라우트 */}
-          <Route path="board">
-            <Route index element={<Board />} />
+        <Route element={<PrivateRoute />}>
+          {/* 메인 대시보드 */}
+          <Route element={<Layout showPageNav={false} />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/setting" element={<Setting />} />
           </Route>
 
-          {/* 일정 조율 라우트 */}
-          <Route path="schedule">
-            <Route index element={<Schedule />} />
+          {/* 프로젝트 라우트 */}
+          <Route
+            path="/project/:projectID"
+            element={<Layout showPageNav={true} />}
+          >
+            <Route index element={<Calendar />} />
+            <Route path="setting" element={<ProjectSetting />} />
+            <Route path="calendar" element={<Calendar />} />
+
+            {/* 게시판 라우트 */}
+            <Route path="board">
+              <Route index element={<Board />} />
+            </Route>
+
+            {/* 일정 조율 라우트 */}
+            <Route path="schedule">
+              <Route index element={<Schedule />} />
+            </Route>
           </Route>
         </Route>
 
