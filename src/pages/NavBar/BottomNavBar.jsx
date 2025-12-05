@@ -23,6 +23,10 @@ const PageNavBar = ({ projectName }) => {
   const isInvalidProject = !projectID || projectID === "undefined";
   const isBasePath = location.pathname === `/project/${projectID}`;
 
+  if (isSettingPage) {
+    return null;
+  }
+
   const pages = [
     {
       id: 1,
