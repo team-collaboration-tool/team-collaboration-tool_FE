@@ -193,6 +193,9 @@
   z-index: 1000;
   box-sizing: border-box;
   overflow-y: auto;
+
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .projectTitle {
@@ -201,6 +204,7 @@
   font-size: 22px;
   font-weight: 600;
   text-transform: uppercase;
+  margin-top: 15px;
   margin-bottom: 15px;
 }
 
@@ -470,6 +474,8 @@
 .dateTimeContainer {
   display: flex;
   flex-direction: column;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #dee2e6;
 }
 
 .dateTitle {
@@ -485,13 +491,21 @@
   flex-direction: row;
 }
 
-.dateInput,
-.timeInput {
-  width: 110px;
+.dateInput {
+  width: 100px;
   height: 25px;
   border: 1px solid #dee2e6;
   border-radius: 5px;
   padding: 5px;
+}
+
+.timeInput {
+  width: 100px;
+  height: 25px;
+  border: 1px solid #dee2e6;
+  border-radius: 5px;
+  padding: 5px;
+  margin-top: 5px;
 }
 
 /* 컬러 선택 */
@@ -499,6 +513,8 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #dee2e6;
 }
 
 .colorLabel {
@@ -548,6 +564,10 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  padding-top: 10px;
+  border-top: 2px solid #dee2e6;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #dee2e6;
 }
 
 .participantLabel {
@@ -560,7 +580,7 @@
 }
 
 .participantList {
-  max-height: 180px;
+  max-height: 110px;
   overflow-y: auto;
   padding: 12px;
   border: 1px solid #dee2e6;
@@ -593,8 +613,8 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 10px;
-  border-radius: 4px;
+  padding: 3px 10px;
+  border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.2s;
 }
@@ -637,16 +657,14 @@
 /* 폼 액션 버튼 */
 .formActions {
   display: flex;
-  gap: 10px;
+  border: 2px solid #dee2e6;
+  border-radius: 12px;
   margin-top: 8px;
 }
 
 .saveButton,
 .cancelButton {
   flex: 1;
-  padding: 12px;
-  border: none;
-  border-radius: 6px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -656,16 +674,16 @@
 .saveButton {
   background-color: #4d80e4;
   color: #ffffff;
+  border-radius: 10px 0px 0px 10px;
 }
 
 .saveButton:hover:not(:disabled) {
   background-color: #3b6edc;
-  transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(77, 128, 228, 0.3);
+  border-color: #adb5bd;
 }
 
 .saveButton:disabled {
-  background-color: #adb5bd;
   cursor: not-allowed;
   opacity: 0.6;
 }
@@ -673,7 +691,7 @@
 .cancelButton {
   background-color: #ffffff;
   color: #495057;
-  border: 2px solid #dee2e6;
+  border-radius: 0px 10px 10px 0px;
 }
 
 .cancelButton:hover:not(:disabled) {
