@@ -506,6 +506,7 @@ body {
 }
 
 #between_GridLine {
+    display: none;
     position: absolute;
     transform: translate(-50%, -50%);
     left: 50%;
