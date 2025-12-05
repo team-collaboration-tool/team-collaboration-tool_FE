@@ -347,7 +347,6 @@ const Setting = () => {
                   disabled={!isEditing}
                 >
                   <option value="">전공/직무를 선택하세요</option>
-                  <option value="컴퓨터공학">컴퓨터공학</option>
                   <option value="소프트웨어 개발/IT엔지니어링">
                     소프트웨어 개발/IT엔지니어링
                   </option>
