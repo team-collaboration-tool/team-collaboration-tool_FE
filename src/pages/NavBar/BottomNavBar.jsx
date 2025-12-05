@@ -21,7 +21,7 @@ const PageNavBar = ({ projectName }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const isCalendarPage = location.pathname.endsWith("/calendar");
-  const isSettingPage = location.pathname === "/setting";
+  const isSettingPage = location.pathname.endsWith("/setting");
   const isInvalidProject = !projectID || projectID === "undefined";
   const isBasePath = location.pathname === `/project/${projectID}`;
 
