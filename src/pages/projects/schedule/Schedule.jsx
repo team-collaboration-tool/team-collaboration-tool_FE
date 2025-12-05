@@ -7,6 +7,7 @@
 
 import "./css/csSogong_Schedule.css";  // css 파일 선언
 import React from "react";
+import { useParams } from "react-router-dom";
 
 // baseURL import
 const baseURL =
@@ -34,7 +35,7 @@ export default function TimeSchedulerPage() {
   const [howDateLong, setHowDateLong] = React.useState("");
   const [timeStart, setTimeStart] = React.useState("09:00");
   const [timeEnd, setTimeEnd] = React.useState("18:00");
-  const [whatName, setWhatName] = React.useState("이름 입력");
+  const [whatName, setWhatName] = React.useState("");
   const [items, setItems] = React.useState([]); // 이거는 위에 5개 데이터를 넣은 배열로 사용
 
 
@@ -72,15 +73,110 @@ export default function TimeSchedulerPage() {
       peopleCount: test_EntireTimeTable_HowPeople,
     },
   };
-
-
   // 테스트용 데이터 끝
   // ========================================================================================
   // ========================================================================================
+
+  // projectPK!!
+  const { projectID } = useParams();
+  const ProjectPK = projectID;
+
+  // userPK!!
+  const [myUserPk, setMyUserPk] = React.useState(null);
+  const [myEmail, setMyEmail] = React.useState(null);
+
+
+  // GET : /api/users/me == 내 이메일 얻기
+  const getMyUserInfo = React.useCallback(() => {
+    const token = localStorage.getItem("token");
+
+    fetch(`${baseURL}/api/users/me`, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    })
+      .then(async (res) => {
+        console.log(`GET : /api/users/me 응답 코드 == ${res.status}`);
+        const raw = await res.text();
+        console.log("GET : /api/users/me 응답 RAW == ", raw);
+
+        if (res.status === 200) {
+          try {
+            const data = JSON.parse(raw);
+            console.log("GET : /api/users/me JSON == ", data);
+            setMyEmail(data.email);
+          } catch (err) {
+            console.log("JSON 파싱 실패 == ", err);
+          }
+        } else {
+          console.error("요청 실패 == ", raw);
+        }
+      })
+      .catch((err) => {
+        console.error("GET : /api/users/me 에러 발생 == ", err);
+      });
+  }, []);
+
+
+  // GET : /api/projects/{projectId} == 프로젝트 멤버들 userPK 찾기
+  const getMyUserPkFromProject = React.useCallback((projectId, myEmail) => {
+    const token = localStorage.getItem("token");
+    fetch(`${baseURL}/api/projects/${projectId}`, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    })
+      .then(async (res) => {
+        console.log(`GET : /api/projects/${projectId} 응답 코드 == ${res.status}`);
+        const raw = await res.text();
+        console.log("GET : /api/projects/{projectId} RAW == ", raw);
+
+        if (res.status === 200) {
+          const data = JSON.parse(raw);
+          console.log("GET : /api/projects/{projectId} JSON == ", data);
+
+          const members = data.members || [];
+          const me = members.find(m => m.email === myEmail);
+
+          if (me) {
+            console.log("프로젝트 안에서 찾은 나 == ", me);
+            setMyUserPk(me.userPk);
+            console.log(`프로젝트 PK == ${ProjectPK}`);
+            console.log(`user PK == ${me.userPk}`);
+          } else {
+            console.warn("members 안에서 내 email과 일치하는 항목을 못 찾았음");
+          }
+        } else {
+          console.error("요청 실패 == ", raw);
+        }
+      })
+      .catch((err) => {
+        console.error("GET : /api/projects/{projectId} 에러 발생 == ", err);
+      });
+  }, []);
+
+
+  // =============================================================================
+
+
+  // 이메일로 내 userPK 찾기
+  React.useEffect(() => {
+    getMyUserInfo();
+  }, []);
+  React.useEffect(() => {
+    if (!ProjectPK || !myEmail) return;
+    getMyUserPkFromProject(ProjectPK, myEmail);
+  }, [ProjectPK, myEmail, getMyUserPkFromProject]);
+
+
   // GET : /api/time-poll/list/{projectId} == 시간조율표 목록 조회
   React.useEffect(() => {
     const token = localStorage.getItem("token");
-    const projectId = 1;  // TODO: 나중에 실제 projectId로 교체
+    const projectId = ProjectPK;
 
     fetch(`${baseURL}/api/time-poll/list/${projectId}`, {
       method: "GET",
@@ -158,7 +254,8 @@ export default function TimeSchedulerPage() {
             dateLength,
             timeStartHour: DEFAULT_START_HOUR,
             timeEndHour: DEFAULT_END_HOUR,
-            createdLabel: `조율표 이름 == ${poll.title}`,
+            // createdLabel: `조율표 이름 == ${poll.title}`,
+            createdLabel: `${poll.title}`,
           };
         });
 
@@ -173,7 +270,6 @@ export default function TimeSchedulerPage() {
         setItems(test_item);
       });
   }, []);
-
 
 
   // 시작, 종료 시간을 00분으로 고정
@@ -233,8 +329,8 @@ export default function TimeSchedulerPage() {
 
     // POST : /api/time-poll == 시간조율표 생성
     const payload = {
-      projectId: 1,   // TODO: 실제 프젝 아이디로 교체
-      creatorId: 1,   // TODO: 실제 creatorId로 교체
+      projectId: ProjectPK,
+      creatorId: myUserPk,
       title: TableNameString,
       startDate: when_dateStart,
       duration: how_dateLong_int,
@@ -285,7 +381,8 @@ export default function TimeSchedulerPage() {
     // new item 생성
     const newItem = {
       id: `${now.getTime()}`,
-      createdLabel: `조율표 이름 == ${TableNameString}`,
+      // createdLabel: `조율표 이름 == ${TableNameString}`,
+      createdLabel: `${TableNameString}`,
       dateStart: when_dateStart,
       dateLength: how_dateLong_int,
       timeStartHour: when_timeStart,
@@ -326,10 +423,10 @@ export default function TimeSchedulerPage() {
         item.dateLength,
         item.timeStartHour,
         item.timeEndHour,
-
-        // 추가 데이터 2개 == 2차원 배열, 인원수
         grid,
-        peopleCount
+        peopleCount,
+        item.id,
+        myUserPk
       );
     } else {
       console.log("const onItemClick() 뭔가 잘못됬음 ");
@@ -361,8 +458,88 @@ export default function TimeSchedulerPage() {
   // 이렇게 2차원 배열 생성 == 해당 배열은 해당 시간조율표에 귀속
   React.useEffect(() => {
 
+    // get 함수 개인,팀 2개 반환으로 인한 변경
+    // // if 서버에서 datd grid 받아오는데 성공한 경우, updateGrid
+    // function updateRightGrid_FromBackend(serverGridData, totalPeople, cols, rows) {
+    //   const container = document.getElementById('GRID_rightShow_GridContainer');
+    //   if (!container || !serverGridData) return;
+    //   const rightCells = container.querySelectorAll('.grid_cell_right');
+
+    //   rightCells.forEach((cell, index) => {
+    //     const row = Math.floor(index / cols); // timeIndex
+    //     const col = index % cols;             // dayIndex
+    //     const count = serverGridData[col]?.[row] ?? 0;
+
+    //     // 투명도 계산
+    //     const opacity = totalPeople ? count / totalPeople : 0;
+
+    //     if (opacity > 0) {
+    //       cell.style.backgroundColor = `rgba(51, 161, 224, ${opacity})`;
+    //     } else {
+    //       cell.style.backgroundColor = 'transparent';
+    //     }
+    //   });
+    // }
+
+    // GRID left_my time
+    function applyMyGridToLeftGrid(myGrid, cols, rows) {
+      const container = document.getElementById('GRID_leftSelect_GridContainer');
+      if (!container || !myGrid) return;
+
+      const cells = container.querySelectorAll('.grid_cell');
+
+      cells.forEach((cell, index) => {
+        const row = Math.floor(index / cols); // timeIndex
+        const col = index % cols;             // dayIndex
+        const val = myGrid[col]?.[row] ?? 0;
+
+        if (val === 1) {
+          cell.classList.add('selected');
+        } else {
+          cell.classList.remove('selected');
+        }
+      });
+    }
+
+    // GIRD right_team time
+    function updateRightGrid_FromBackend(teamGrid, cols, rows) {
+      const container = document.getElementById('GRID_rightShow_GridContainer');
+      if (!container || !teamGrid) return;
+
+      const rightCells = container.querySelectorAll('.grid_cell_right');
+
+      // 최대 인원 수(색 농도 계산용)
+      let maxCount = 0;
+      for (let c = 0; c < cols; c++) {
+        for (let r = 0; r < rows; r++) {
+          const cnt = teamGrid[c]?.[r] ?? 0;
+          if (cnt > maxCount) maxCount = cnt;
+        }
+      }
+      if (maxCount <= 0) {
+        // 전부 0이면 전부 투명 처리
+        rightCells.forEach(cell => { cell.style.backgroundColor = 'transparent'; });
+        return;
+      }
+
+      rightCells.forEach((cell, index) => {
+        const row = Math.floor(index / cols); // timeIndex
+        const col = index % cols;             // dayIndex
+        const count = teamGrid[col]?.[row] ?? 0;
+        const opacity = count / maxCount;
+
+        if (opacity > 0) {
+          cell.style.backgroundColor = `rgba(51, 161, 224, ${opacity})`;
+        } else {
+          cell.style.backgroundColor = 'transparent';
+        }
+      });
+    }
+
+
+
     // 드래그표 왼쪽 거_(실제 클릭 및 드래그 하는 곳) 생성 func
-    function setupGrid_left(dateData, rowCount, columnCount, test_EntireTimeTable_Array, test_EntireTimeTable_HowPeople) {
+    function setupGrid_left(dateData, rowCount, columnCount, test_EntireTimeTable_Array, test_EntireTimeTable_HowPeople, pollId, currentUserId) {
       if (columnCount < 1 || columnCount > 7) {
         console.error("열 개수는 1에서 7 사이여야 합니다.");
         return;
@@ -409,49 +586,6 @@ export default function TimeSchedulerPage() {
       // ========================================================================
       // 드래그 하다가 손 떼는 순간 generateSummary() 실행
       function generateSummary() {
-
-        // 지우지는 말 것
-        // const summaryParts = [];
-        // days.forEach(day => {
-        //   if (!selectedByDay[day]) return;
-        //   const timeIndices = selectedByDay[day].sort((a, b) => a - b);
-        //   if (timeIndices.length === 0) return;
-
-        //   const dayTimeRanges = [];
-        //   let start = timeIndices[0];
-        //   let end = timeIndices[0];
-
-        //   for (let i = 1; i < timeIndices.length; i++) {
-        //     if (timeIndices[i] === end + 1) end = timeIndices[i];
-        //     else {
-        //       const startTime = formatTime(start);
-        //       const endTime = formatTime(end + 1);
-        //       dayTimeRanges.push(`${startTime}~${endTime}`);
-        //       start = timeIndices[i];
-        //       end = timeIndices[i];
-        //     }
-        //   }
-
-        //   const startTime = formatTime(start);
-        //   const endTime = formatTime(end + 1);
-        //   dayTimeRanges.push(`${startTime}~${endTime}`);
-        //   summaryParts.push(`${day} ${dayTimeRanges.join(', ')}`);
-        // });
-
-        // if (summaryParts.length > 0) {
-        //   console.log("선택된 시간 list ================================");
-        //   summaryParts.forEach(line => console.log(" - ", line));
-        // } else {
-        //   console.log("선택된 시간 없");
-        // }
-
-        // function formatTime(index) {
-        //   const totalMinutes = index * 30 + 9 * 60;
-        //   const hours = Math.floor(totalMinutes / 60);
-        //   const minutes = totalMinutes % 60;
-        //   return String(hours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0');
-        // }
-
         const selectedByDay = {};
         const selectedCells = new Set();
 
@@ -472,19 +606,19 @@ export default function TimeSchedulerPage() {
             const dayIndex = index % cols;
             const timeIndex = Math.floor(index / cols);
             if (grid2D[dayIndex] && grid2D[dayIndex][timeIndex] !== undefined) {
-                grid2D[dayIndex][timeIndex] = 1;
+              grid2D[dayIndex][timeIndex] = 1;
             }
           }
         });
 
         const convertedAvailableTimes = [];
         const baseDateObj = new Date(dateData);
-        const startHourInt = 9; 
+        const startHourInt = 9;
 
         for (let dayIdx = 0; dayIdx < cols; dayIdx++) {
           for (let timeIdx = 0; timeIdx < rows; timeIdx++) {
 
-            if (grid2D[dayIdx][timeIdx] === 1) { 
+            if (grid2D[dayIdx][timeIdx] === 1) {
               const targetDate = new Date(baseDateObj);
               targetDate.setDate(baseDateObj.getDate() + dayIdx);
               const yyyy = targetDate.getFullYear();
@@ -506,8 +640,8 @@ export default function TimeSchedulerPage() {
               const endTimeStr = formatTime(totalMinutesEnd);
 
               convertedAvailableTimes.push({
-                start: `${dateStr}T${startTimeStr}`, 
-                end: `${dateStr}T${endTimeStr}`     
+                start: `${dateStr}T${startTimeStr}`,
+                end: `${dateStr}T${endTimeStr}`
               });
             }
           }
@@ -518,11 +652,11 @@ export default function TimeSchedulerPage() {
         const hasSelection = convertedAvailableTimes.length > 0;
 
         if (hasSelection) {
-          const currentPollId = 1; // TODO: 실제 pollId
+          const currentPollId = pollId;
           const payload = {
             pollId: currentPollId,
-            userId: 1, // TODO: 실제 userId
-            availableTimes: convertedAvailableTimes, 
+            userId: currentUserId,
+            availableTimes: convertedAvailableTimes,
           };
 
           console.log("POST : /api/time-poll/submit 보내는 내용 == ", payload);
@@ -536,31 +670,51 @@ export default function TimeSchedulerPage() {
             },
             body: JSON.stringify(payload),
           })
-          .then((res) => {
+            .then((res) => {
               console.log("POST : /api/time-poll/submit return 코드:", res.status);
-              return fetch(`${baseURL}/api/time-poll/${currentPollId}`, {
+              return fetch(`${baseURL}/api/time-poll/${pollId}?userId=${currentUserId}`, {
                 method: "GET",
                 headers: { "Authorization": `Bearer ${token}` },
               });
-          })
+            })
 
-
-          // GET : /api/time-poll/{pollId} == 드래그표 업데이트
-          .then(async (res) => {
+            // GET : /api/time-poll/{pollId} == 드래그표 업데이트
+            .then(async (res) => {
               console.log(`GET : /api/time-poll/${currentPollId} 응답 코드 == `, res.status);
 
               if (res.status === 200) {
                 const data = await res.json();
                 console.log("GET 성공 200, return 값 내용 == ", data);
-                if (data.gridData) {
-                  updateRightGrid_FromBackend(data.gridData, test_EntireTimeTable_HowPeople, cols, rows);
+
+                // left 업데이트
+                if (Array.isArray(data.myGrid)) {
+                  applyMyGridToLeftGrid(data.myGrid, cols, rows);
                 } else {
-                  console.log("지금 응답은 200인데, return에 gird data가 없음");
-                  updateRightGridBySelection(test_EntireTimeTable_Array, test_EntireTimeTable_HowPeople, cols, rows, selectedCells);
+                  console.log("myGrid 이상 발생");
+                }
+
+                // right 업데이트
+                if (Array.isArray(data.teamGrid)) {
+                  updateRightGrid_FromBackend(data.teamGrid, cols, rows);
+                } else {
+                  console.log("teamGrid 이상 발생");
+                  updateRightGridBySelection(
+                    test_EntireTimeTable_Array,
+                    test_EntireTimeTable_HowPeople,
+                    cols,
+                    rows,
+                    selectedCells
+                  );
                 }
               } else {
                 console.log("GET 실패");
-                updateRightGridBySelection(test_EntireTimeTable_Array, test_EntireTimeTable_HowPeople, cols, rows, selectedCells);
+                updateRightGridBySelection(
+                  test_EntireTimeTable_Array,
+                  test_EntireTimeTable_HowPeople,
+                  cols,
+                  rows,
+                  selectedCells
+                );
               }
             })
             .catch((err) => {
@@ -568,29 +722,6 @@ export default function TimeSchedulerPage() {
               updateRightGridBySelection(test_EntireTimeTable_Array, test_EntireTimeTable_HowPeople, cols, rows, selectedCells);
             });
         }
-      }
-
-
-      // if 서버에서 datd grid 받아오는데 성공한 경우, updateGrid
-      function updateRightGrid_FromBackend(serverGridData, totalPeople, cols, rows) {
-        const container = document.getElementById('GRID_rightShow_GridContainer');
-        if (!container || !serverGridData) return;
-        const rightCells = container.querySelectorAll('.grid_cell_right');
-
-        rightCells.forEach((cell, index) => {
-          const row = Math.floor(index / cols); // timeIndex
-          const col = index % cols;             // dayIndex
-          const count = serverGridData[col]?.[row] ?? 0;
-
-          // 투명도 계산
-          const opacity = totalPeople ? count / totalPeople : 0;
-
-          if (opacity > 0) {
-            cell.style.backgroundColor = `rgba(51, 161, 224, ${opacity})`;
-          } else {
-            cell.style.backgroundColor = 'transparent';
-          }
-        });
       }
 
       cells.forEach(cell => {
@@ -792,20 +923,58 @@ export default function TimeSchedulerPage() {
       when_timeStart,
       when_timeEnd,
       test_EntireTimeTable_Array,
-      test_EntireTimeTable_HowPeople
+      test_EntireTimeTable_HowPeople,
+      pollId,
+      currentUserId
     ) {
       const rows = (when_timeEnd - when_timeStart) * 2;
       const cols = how_dateLong_int;
 
-      // 생성 = left_GRID
-      setupGrid_left(when_dateStart, rows, cols, test_EntireTimeTable_Array, test_EntireTimeTable_HowPeople);
-
-      // 생성 = right_GIRD
+      // 생성 = left_GRID, right_GRID
+      setupGrid_left(when_dateStart, rows, cols, test_EntireTimeTable_Array, test_EntireTimeTable_HowPeople, pollId, currentUserId);
       setupGrid_right(when_dateStart, rows, cols, test_EntireTimeTable_Array, test_EntireTimeTable_HowPeople);
 
       // 생성 = 시간 & 요일 표
       fillLeftTime(rows, when_timeStart);
       fillUpDay(when_dateStart, cols);
+
+      // 처음 그릴 때, 미리 그려진 정보 GET
+      const token = localStorage.getItem("token");
+      console.log(`초기 데이터 로딩 시작: /api/time-poll/${pollId}`);
+
+      // GET : /api/time-poll/{pollId} == 초기 시간조율표 로딩
+      fetch(`${baseURL}/api/time-poll/${pollId}?userId=${currentUserId}`, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
+        .then(async (res) => {
+          if (res.status === 200) {
+            const data = await res.json();
+            console.log("초기 데이터 GET 성공:", data);
+
+            // left 업데이트
+            if (Array.isArray(data.myGrid)) {
+              applyMyGridToLeftGrid(data.myGrid, cols, rows);
+            } else {
+              console.log("초기 세팅, left 이상 발생");
+            }
+
+            // right 업데이트
+            if (Array.isArray(data.teamGrid)) {
+              updateRightGrid_FromBackend(data.teamGrid, cols, rows);
+            } else {
+              console.log("초기 세팅, right 이상 발생");
+            }
+          } else {
+            console.warn("초기 데이터 GET 실패 == ", res.status);
+          }
+        })
+        .catch((err) => {
+          console.error("초기 데이터 로딩 중 에러 == ", err);
+        });
     }
     window.TimeSelect_MoveToGrid = TimeSelect_MoveToGrid;
     // function TimeSelect_MoveToGrid(when_dateStart, how_dateLong_int, when_timeStart, when_timeEnd) {
