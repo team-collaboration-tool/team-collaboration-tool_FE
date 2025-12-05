@@ -714,6 +714,25 @@ export default function Board() {
         // seeContainer == div class = .GaeSiPan_See
         const class_GaeSiPan_list = seeContainer.querySelector('.GaeSiPan_list');
 
+        // 날짜 포맷 표기 변경
+        const formatDateTime = (ts) => {
+            if (!ts) return "";
+            try {
+                const d = new Date(ts);
+                if (isNaN(d.getTime())) return ts;
+
+                const yyyy = d.getFullYear();
+                const MM = String(d.getMonth() + 1).padStart(2, "0");
+                const dd = String(d.getDate()).padStart(2, "0");
+                const hh = String(d.getHours()).padStart(2, "0");
+                const mm = String(d.getMinutes()).padStart(2, "0");
+
+                return `${yyyy}.${MM}.${dd} / ${hh}:${mm}`;
+            } catch (e) {
+                return ts;
+            }
+        };
+
         const renderSee = (post) => {
             seeContainer.classList.add("on");
             if (!post) return;
@@ -730,7 +749,7 @@ export default function Board() {
 
         <div class="GSPS_title_field">
           <div id="GSPS_title">${escapeHTML(post.title)}</div>
-          <div id="GSPS_when">${escapeHTML(post.timestamp)}</div>
+          <div id="GSPS_when">${formatDateTime(post.timestamp)}</div>
         </div>
 
         <div class="GSPS_field">
