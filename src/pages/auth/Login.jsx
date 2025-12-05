@@ -35,6 +35,26 @@ const Login = () => {
 
       if (response.ok) {
         localStorage.setItem("token", result.token);
+
+        try {
+          const profileResponse = await fetch(`${API_URL}/api/users/me`, {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${result.token}`,
+            },
+          });
+
+          if (profileResponse.ok) {
+            const profile = await profileResponse.json();
+            localStorage.setItem("user", JSON.stringify(profile));
+          } else {
+            localStorage.removeItem("user");
+          }
+        } catch (profileError) {
+          console.error("사용자 정보 로드 실패:", profileError);
+          localStorage.removeItem("user");
+        }
+
         navigate("/dashboard");
       } else {
         alert(result.message || "존재하지 않는 아이디이거나 잘못된 비밀번호입니다.");
