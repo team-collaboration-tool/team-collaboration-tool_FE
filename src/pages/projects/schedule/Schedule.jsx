@@ -29,9 +29,18 @@ export default function TimeSchedulerPage() {
     return () => { try { delete window.swtich_list; } catch (_) { } };
   }, []);
 
+  // 오늘 날짜로 띄우기
+  const getTodayString = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0"); // 월은 0부터 시작하므로 +1
+    const day = String(today.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  };
 
   // 시간조율표 입력값 5가지
-  const [whenDateStart, setWhenDateStart] = React.useState("2025-10-01");
+  const [whenDateStart, setWhenDateStart] = React.useState(getTodayString());
   const [howDateLong, setHowDateLong] = React.useState("");
   const [timeStart, setTimeStart] = React.useState("09:00");
   const [timeEnd, setTimeEnd] = React.useState("18:00");
@@ -161,6 +170,107 @@ export default function TimeSchedulerPage() {
 
 
   // =============================================================================
+  // GET : /api/time-poll/list/{projectId} == 시간조율표 목록 조회
+  const fetchPollList = React.useCallback(() => {
+    const token = localStorage.getItem("token");
+    const projectId = ProjectPK;
+
+    if (!projectId) return;
+
+    fetch(`${baseURL}/api/time-poll/list/${projectId}`, {
+      method: "GET",
+      headers: { "Authorization": `Bearer ${token}` },
+    })
+      .then(async (res) => {
+        if (res.status !== 200) {
+          setItems(test_item);
+          return;
+        }
+
+        const rawText = await res.text();
+        let data;
+        try {
+          data = JSON.parse(rawText);
+        } catch (e) {
+          setItems(test_item);
+          return;
+        }
+
+        if (!Array.isArray(data)) {
+          setItems(test_item);
+          return;
+        }
+
+        const MS_PER_DAY = 86400000;
+        const mapped = data.map((poll) => {
+          const dateStart = poll.startDate;
+          const dateEnd = poll.endDate;
+          let dateLength = 1;
+
+          if (dateStart && dateEnd) {
+            const start = new Date(dateStart);
+            const end = new Date(dateEnd);
+            const diffDays = Math.floor((end - start) / MS_PER_DAY) + 1;
+            if (!Number.isNaN(diffDays) && diffDays > 0) {
+              dateLength = diffDays;
+            }
+          }
+
+          // 디폴트 값
+          let parsedStartHour = 9;
+          let parsedEndHour = 18;
+
+          if (Array.isArray(poll.timeLabels) && poll.timeLabels.length > 0) {
+            const firstLabel = poll.timeLabels[0]; // ex: "11:00"
+            const startH = parseInt(firstLabel.split(':')[0], 10);
+
+            if (!isNaN(startH)) {
+              parsedStartHour = startH;
+              parsedEndHour = parsedStartHour + (poll.timeLabels.length / 2);
+            }
+          }
+          else {
+            if (poll.startTimeOfDay) {
+              if (typeof poll.startTimeOfDay === 'string') {
+                parsedStartHour = parseInt(poll.startTimeOfDay.split(':')[0], 10);
+              } else if (typeof poll.startTimeOfDay === 'object' && poll.startTimeOfDay.hour !== undefined) {
+                parsedStartHour = poll.startTimeOfDay.hour;
+              }
+            }
+            if (poll.endTimeOfDay) {
+              if (typeof poll.endTimeOfDay === 'string') {
+                parsedEndHour = parseInt(poll.endTimeOfDay.split(':')[0], 10);
+              } else if (typeof poll.endTimeOfDay === 'object' && poll.endTimeOfDay.hour !== undefined) {
+                parsedEndHour = poll.endTimeOfDay.hour;
+              }
+            }
+          }
+
+          console.log(`[Poll ID: ${poll.pollId}] 시작시간 파싱결과: ${parsedStartHour}시 ~ ${parsedEndHour}시`);
+
+          return {
+            id: poll.pollId,
+            dateStart,
+            dateLength,
+            timeStartHour: parsedStartHour,
+            timeEndHour: parsedEndHour,
+            createdLabel: `${poll.title}`,
+          };
+        });
+
+        setItems(mapped);
+      })
+      .catch((err) => {
+        console.log("GET 에러:", err);
+        setItems(test_item);
+      });
+  }, [ProjectPK, baseURL]);
+  React.useEffect(() => {
+    fetchPollList();
+  }, [fetchPollList]);
+
+
+  // =============================================================================
 
 
   // 이메일로 내 userPK 찾기
@@ -173,103 +283,126 @@ export default function TimeSchedulerPage() {
   }, [ProjectPK, myEmail, getMyUserPkFromProject]);
 
 
-  // GET : /api/time-poll/list/{projectId} == 시간조율표 목록 조회
-  React.useEffect(() => {
-    const token = localStorage.getItem("token");
-    const projectId = ProjectPK;
+  // // GET : /api/time-poll/list/{projectId} == 시간조율표 목록 조회
+  // React.useEffect(() => {
+  //   const token = localStorage.getItem("token");
+  //   const projectId = ProjectPK;
 
-    fetch(`${baseURL}/api/time-poll/list/${projectId}`, {
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-      },
-    })
-      .then(async (res) => {
-        console.log("GET : /api/time-poll/list 응답 코드 == ", res.status);
+  //   fetch(`${baseURL}/api/time-poll/list/${projectId}`, {
+  //     method: "GET",
+  //     headers: {
+  //       "Authorization": `Bearer ${token}`,
+  //     },
+  //   })
+  //     .then(async (res) => {
+  //       console.log("GET : /api/time-poll/list 응답 코드 == ", res.status);
 
-        // return값 console log
-        const rawText = await res.text();
-        console.log("GET : /api/time-poll/list RAW BODY == ", rawText);
+  //       // return값 console log
+  //       const rawText = await res.text();
+  //       console.log("GET : /api/time-poll/list RAW BODY == ", rawText);
 
-        // return 200이 아니면, test_item 사용
-        if (res.status !== 200) {
-          console.log(
-            "GET : /api/time-poll/list 응답 코드 == ",
-            res.status,
-            "-> 테스트 데이터 사용"
-          );
-          setItems(test_item);
-          return;
-        }
+  //       // return 200이 아니면, test_item 사용
+  //       if (res.status !== 200) {
+  //         console.log(
+  //           "GET : /api/time-poll/list 응답 코드 == ",
+  //           res.status,
+  //           "-> 테스트 데이터 사용"
+  //         );
+  //         setItems(test_item);
+  //         return;
+  //       }
 
-        // return 200
-        let data;
-        try {
-          data = JSON.parse(rawText);
-        } catch (e) {
-          console.log(
-            "GET : /api/time-poll/list JSON 파싱 에러:",
-            e,
-            "-> 테스트 데이터 사용"
-          );
-          setItems(test_item);
-          return;
-        }
+  //       // return 200
+  //       let data;
+  //       try {
+  //         data = JSON.parse(rawText);
+  //       } catch (e) {
+  //         console.log(
+  //           "GET : /api/time-poll/list JSON 파싱 에러:",
+  //           e,
+  //           "-> 테스트 데이터 사용"
+  //         );
+  //         setItems(test_item);
+  //         return;
+  //       }
 
-        if (!Array.isArray(data)) {
-          console.log(
-            "GET : /api/time-poll/list 응답 형식이 배열이 아님:",
-            data,
-            "-> 테스트 데이터 사용"
-          );
-          setItems(test_item);
-          return;
-        }
+  //       if (!Array.isArray(data)) {
+  //         console.log(
+  //           "GET : /api/time-poll/list 응답 형식이 배열이 아님:",
+  //           data,
+  //           "-> 테스트 데이터 사용"
+  //         );
+  //         setItems(test_item);
+  //         return;
+  //       }
 
-        // 여기서 응답 --> item 형식으로 변환
-        const MS_PER_DAY = 86400000;
+  //       // 여기서 응답 --> item 형식으로 변환
+  //       const MS_PER_DAY = 86400000;
 
-        const mapped = data.map((poll) => {
-          const dateStart = poll.startDate;
-          const dateEnd = poll.endDate;
+  //       const mapped = data.map((poll) => {
+  //         const dateStart = poll.startDate;
+  //         const dateEnd = poll.endDate;
 
-          let dateLength = 1;
-          if (dateStart && dateEnd) {
-            const start = new Date(dateStart);
-            const end = new Date(dateEnd);
-            const diffDays =
-              Math.floor((end - start) / MS_PER_DAY) + 1;
-            if (!Number.isNaN(diffDays) && diffDays > 0) {
-              dateLength = diffDays;
-            }
-          }
+  //         let dateLength = 1;
+  //         if (dateStart && dateEnd) {
+  //           const start = new Date(dateStart);
+  //           const end = new Date(dateEnd);
+  //           const diffDays =
+  //             Math.floor((end - start) / MS_PER_DAY) + 1;
+  //           if (!Number.isNaN(diffDays) && diffDays > 0) {
+  //             dateLength = diffDays;
+  //           }
+  //         }
 
-          // TODO: 시작시간, 종료시간대 설정
-          const DEFAULT_START_HOUR = 9;
-          const DEFAULT_END_HOUR = 18;
+  //         // TODO: 시작시간, 종료시간대 설정
+  //         let parsedStartHour = 9; // 기본값
+  //         let parsedEndHour = 18;  // 기본값
 
-          return {
-            id: poll.pollId,
-            dateStart,
-            dateLength,
-            timeStartHour: DEFAULT_START_HOUR,
-            timeEndHour: DEFAULT_END_HOUR,
-            // createdLabel: `조율표 이름 == ${poll.title}`,
-            createdLabel: `${poll.title}`,
-          };
-        });
+  //         // 시작 시간 파싱
+  //         if (poll.startTimeOfDay) {
+  //           // "HH:MM:SS" 문자열인 경우
+  //           if (typeof poll.startTimeOfDay === 'string') {
+  //             parsedStartHour = parseInt(poll.startTimeOfDay.split(':')[0], 10);
+  //           }
+  //           // 혹시 객체 { hour: 9, ... } 로 오는 경우 대비
+  //           else if (typeof poll.startTimeOfDay === 'object' && poll.startTimeOfDay.hour !== undefined) {
+  //             parsedStartHour = poll.startTimeOfDay.hour;
+  //           }
+  //           console.log(`parsedStartHour == ${parsedStartHour}`);
+  //         }
 
-        setItems(mapped);
-      })
-      .catch((err) => {
-        console.log(
-          "GET : /api/time-poll/list 에러:",
-          err,
-          "-> 테스트 데이터 사용"
-        );
-        setItems(test_item);
-      });
-  }, []);
+  //         // 종료 시간 파싱
+  //         if (poll.endTimeOfDay) {
+  //           if (typeof poll.endTimeOfDay === 'string') {
+  //             parsedEndHour = parseInt(poll.endTimeOfDay.split(':')[0], 10);
+  //           }
+  //           else if (typeof poll.endTimeOfDay === 'object' && poll.endTimeOfDay.hour !== undefined) {
+  //             parsedEndHour = poll.endTimeOfDay.hour;
+  //           }
+  //           console.log(`parsedEndHour == ${parsedEndHour}`);
+  //         }
+
+  //         return {
+  //           id: poll.pollId,
+  //           dateStart,
+  //           dateLength,
+  //           timeStartHour: parsedStartHour, // 수정된 변수 사용
+  //           timeEndHour: parsedEndHour,     // 수정된 변수 사용
+  //           createdLabel: `${poll.title}`,
+  //         };
+  //       });
+
+  //       setItems(mapped);
+  //     })
+  //     .catch((err) => {
+  //       console.log(
+  //         "GET : /api/time-poll/list 에러:",
+  //         err,
+  //         "-> 테스트 데이터 사용"
+  //       );
+  //       setItems(test_item);
+  //     });
+  // }, []);
 
 
   // 시작, 종료 시간을 00분으로 고정
@@ -361,18 +494,21 @@ export default function TimeSchedulerPage() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,   // 로그인 토큰
+        "Authorization": `Bearer ${token}`,
       },
       body: JSON.stringify(payload),
     })
-      // return값 console log
-      .then((res) => {
+      .then(async (res) => {
         console.log("POST : /api/time-poll 응답 코드 == ", res.status);
-        console.log("RAW RESPONSE:", res);
-        return res.json();
-      })
-      .then((data) => {
-        console.log("POST : /api/time-poll success:", data);
+
+        if (res.status === 200 || res.status === 201) {
+          console.log("생성 성공 -> 리스트 갱신");
+          fetchPollList();
+
+          setWhatName("");
+        } else {
+          console.error("생성 실패", res);
+        }
       })
       .catch((err) => {
         console.error("POST : /api/time-poll error:", err);
@@ -389,17 +525,14 @@ export default function TimeSchedulerPage() {
       timeEndHour: when_timeEnd,
     };
 
-    setItems((prev) => [newItem, ...prev]);
+    // setItems((prev) => [newItem, ...prev]);
   }, [whenDateStart, howDateLong, timeStart, timeEnd, whatName]);
-  // 
-  // 추후에 여기, POST 요청에 대한 return값을 기반으로 한 로직 구성 예정
-  // ================================================================================
-  // ================================================================================
-
 
 
   // TimeSelect_item 클릭 시, 해당 조율표 화면에 표기
   const onItemClick = React.useCallback((item) => {
+    console.log(`[CLICK] ID: ${item.id}, StartHour: ${item.timeStartHour}`);
+
     window.swtich_list[0].classList.add("off");
     window.swtich_list[1].classList.add("on");
 
@@ -418,10 +551,11 @@ export default function TimeSchedulerPage() {
     }
 
     if (typeof window.TimeSelect_MoveToGrid === "function") {
+      // timeStartHour(11)가 정확히 전달되는지 확인
       window.TimeSelect_MoveToGrid(
         item.dateStart,
         item.dateLength,
-        item.timeStartHour,
+        item.timeStartHour, // 이 값을 setupGrid_left로
         item.timeEndHour,
         grid,
         peopleCount,
@@ -429,23 +563,9 @@ export default function TimeSchedulerPage() {
         myUserPk
       );
     } else {
-      console.log("const onItemClick() 뭔가 잘못됬음 ");
+      console.log("window.TimeSelect_MoveToGrid 함수가 없습니다.");
     }
-  }, [mockEntireTimeTables]);
-  // const onItemClick = React.useCallback((item) => {
-  //   window.swtich_list[0].classList.add("off");
-  //   window.swtich_list[1].classList.add("on");
-  //   if (typeof window.TimeSelect_MoveToGrid === "function") {
-  //     window.TimeSelect_MoveToGrid(
-  //       item.dateStart,
-  //       item.dateLength,
-  //       item.timeStartHour,
-  //       item.timeEndHour
-  //     );
-  //   } else {
-  //     console.log("const onItemClick() 뭔가 잘못됬음 ");
-  //   }
-  // }, []);
+  }, [mockEntireTimeTables, myUserPk]); // myUserPk 의존
 
 
 
@@ -459,28 +579,6 @@ export default function TimeSchedulerPage() {
   React.useEffect(() => {
 
     // get 함수 개인,팀 2개 반환으로 인한 변경
-    // // if 서버에서 datd grid 받아오는데 성공한 경우, updateGrid
-    // function updateRightGrid_FromBackend(serverGridData, totalPeople, cols, rows) {
-    //   const container = document.getElementById('GRID_rightShow_GridContainer');
-    //   if (!container || !serverGridData) return;
-    //   const rightCells = container.querySelectorAll('.grid_cell_right');
-
-    //   rightCells.forEach((cell, index) => {
-    //     const row = Math.floor(index / cols); // timeIndex
-    //     const col = index % cols;             // dayIndex
-    //     const count = serverGridData[col]?.[row] ?? 0;
-
-    //     // 투명도 계산
-    //     const opacity = totalPeople ? count / totalPeople : 0;
-
-    //     if (opacity > 0) {
-    //       cell.style.backgroundColor = `rgba(51, 161, 224, ${opacity})`;
-    //     } else {
-    //       cell.style.backgroundColor = 'transparent';
-    //     }
-    //   });
-    // }
-
     // GRID left_my time
     function applyMyGridToLeftGrid(myGrid, cols, rows) {
       const container = document.getElementById('GRID_leftSelect_GridContainer');
@@ -539,7 +637,7 @@ export default function TimeSchedulerPage() {
 
 
     // 드래그표 왼쪽 거_(실제 클릭 및 드래그 하는 곳) 생성 func
-    function setupGrid_left(dateData, rowCount, columnCount, test_EntireTimeTable_Array, test_EntireTimeTable_HowPeople, pollId, currentUserId) {
+    function setupGrid_left(dateData, rowCount, columnCount, test_EntireTimeTable_Array, test_EntireTimeTable_HowPeople, pollId, currentUserId, startHourInt) {
       if (columnCount < 1 || columnCount > 7) {
         console.error("열 개수는 1에서 7 사이여야 합니다.");
         return;
@@ -613,7 +711,7 @@ export default function TimeSchedulerPage() {
 
         const convertedAvailableTimes = [];
         const baseDateObj = new Date(dateData);
-        const startHourInt = 9;
+        const baseStartHour = startHourInt ?? 9;
 
         for (let dayIdx = 0; dayIdx < cols; dayIdx++) {
           for (let timeIdx = 0; timeIdx < rows; timeIdx++) {
@@ -627,7 +725,7 @@ export default function TimeSchedulerPage() {
               const dateStr = `${yyyy}-${mm}-${dd}`;
 
               // 시간 계산 (30분 단위)
-              const totalMinutesStart = (startHourInt * 60) + (timeIdx * 30);
+              const totalMinutesStart = (baseStartHour * 60) + (timeIdx * 30);
               const totalMinutesEnd = totalMinutesStart + 30;
 
               const formatTime = (totalMin) => {
@@ -807,39 +905,6 @@ export default function TimeSchedulerPage() {
         container.appendChild(cell);
       }
     }
-    // function setupGrid_right(dateData, rowCount, columnCount) {
-    //   if (columnCount < 1 || columnCount > 7) {
-    //     console.error("열 개수는 1에서 7 사이여야 합니다.");
-    //     return;
-    //   }
-    //   if (!Number.isInteger(rowCount) || rowCount < 1) {
-    //     console.error("행 개수는 1 이상의 정수여야 합니다.");
-    //     return;
-    //   }
-    //   const container = document.getElementById('GRID_rightShow_GridContainer');
-    //   if (!container) return;
-    //   container.innerHTML = '';
-    //   const cols = columnCount;
-    //   const rows = rowCount;
-    //   const totalCells = cols * rows;
-    //   container.style.display = 'grid';
-    //   const COLUMN_WIDTH_PX = 75;
-    //   container.style.gridTemplateColumns = `repeat(${cols}, ${COLUMN_WIDTH_PX}px)`;
-    //   const ROW_HEIGHT_PX = 30;
-    //   container.style.gridTemplateRows = `repeat(${rows}, ${ROW_HEIGHT_PX}px)`;
-    //   for (let i = 0; i < totalCells; i++) {
-    //     const cell = document.createElement('div');
-    //     cell.classList.add('grid_cell_right');
-    //     const row = Math.floor(i / cols);
-    //     const col = i % cols;
-    //     cell.style.border = 'none';
-    //     cell.style.borderLeft = '1px solid rgb(0, 0, 0)';
-    //     if (col === cols - 1) cell.style.borderRight = '1px solid rgb(0, 0, 0)';
-    //     if (row === 0) cell.style.borderTop = '1px solid rgb(0, 0, 0)';
-    //     else cell.style.borderTop = (row % 2 === 0) ? '1px solid rgb(0, 0, 0)' : '1px dashed rgb(0, 0, 0)';
-    //     container.appendChild(cell);
-    //   }
-    // }
 
 
     // ================================================================================
@@ -931,7 +996,7 @@ export default function TimeSchedulerPage() {
       const cols = how_dateLong_int;
 
       // 생성 = left_GRID, right_GRID
-      setupGrid_left(when_dateStart, rows, cols, test_EntireTimeTable_Array, test_EntireTimeTable_HowPeople, pollId, currentUserId);
+      setupGrid_left(when_dateStart, rows, cols, test_EntireTimeTable_Array, test_EntireTimeTable_HowPeople, pollId, currentUserId, when_timeStart);
       setupGrid_right(when_dateStart, rows, cols, test_EntireTimeTable_Array, test_EntireTimeTable_HowPeople);
 
       // 생성 = 시간 & 요일 표
@@ -955,14 +1020,33 @@ export default function TimeSchedulerPage() {
             const data = await res.json();
             console.log("초기 데이터 GET 성공:", data);
 
-            // left 업데이트
+            if (Array.isArray(data.timeLabels) && data.timeLabels.length > 0) {
+              const firstLabel = data.timeLabels[0]; // ex: "11:00"
+              const realStartHour = parseInt(firstLabel.split(':')[0], 10);
+
+              console.log(`[보정] 목록에선 ${when_timeStart}시라 했지만, 상세 데이터는 ${realStartHour}시 시작임 -> 그리드 재생성`);
+
+              setupGrid_left(
+                when_dateStart,
+                rows,
+                cols,
+                test_EntireTimeTable_Array,
+                test_EntireTimeTable_HowPeople,
+                pollId,
+                currentUserId,
+                realStartHour // 수정
+              );
+              fillLeftTime(rows, realStartHour);
+            }
+
+            // GRID_left 업데이트
             if (Array.isArray(data.myGrid)) {
               applyMyGridToLeftGrid(data.myGrid, cols, rows);
             } else {
               console.log("초기 세팅, left 이상 발생");
             }
 
-            // right 업데이트
+            // GRID_right 업데이트
             if (Array.isArray(data.teamGrid)) {
               updateRightGrid_FromBackend(data.teamGrid, cols, rows);
             } else {
@@ -977,16 +1061,7 @@ export default function TimeSchedulerPage() {
         });
     }
     window.TimeSelect_MoveToGrid = TimeSelect_MoveToGrid;
-    // function TimeSelect_MoveToGrid(when_dateStart, how_dateLong_int, when_timeStart, when_timeEnd) {
-    //   const rows = (when_timeEnd - when_timeStart) * 2;
-    //   const cols = how_dateLong_int;
-    //   setupGrid_left(when_dateStart, rows, cols);
-    //   setupGrid_right(when_dateStart, rows, cols);
-    //   fillLeftTime(rows, when_timeStart);
-    //   fillUpDay(when_dateStart, cols);
-    // }
   }, []);
-
 
 
 
