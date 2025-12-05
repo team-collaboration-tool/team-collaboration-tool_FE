@@ -7,11 +7,10 @@ const Dashboard = () => {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
-  /*
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
-      alert("로그인이 필요합니다.");
+      alert("로그인이 필요합니다. 로그인 후 이용해주세요.");
       navigate("/login");
       return;
     }
@@ -29,7 +28,6 @@ const Dashboard = () => {
       }
     }
   }, [navigate]);
-  */
 
   return (
     <div className="dashboard-container">

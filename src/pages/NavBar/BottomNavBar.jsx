@@ -1,5 +1,5 @@
 // BottomNavBar.jsx
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import "./NavBar.css";
 import { Link, useLocation, useParams } from "react-router-dom";
 import dashboardIcon from "../../asset/Icon/dashboardIcon.svg";
@@ -8,22 +8,55 @@ import communityIcon from "../../asset/Icon/communityIcon.svg";
 import scheduleIcon from "../../asset/Icon/scheduleIcon.svg";
 import settingIcon1 from "../../asset/Icon/settingIcon-01.svg";
 
-const projects = [
-  { id: 1, name: "소프트웨어공학 팀플", to: "/project/1/dashboard" },
-  { id: 2, name: "오픈소스SW설계", to: "/project/2/dashboard" },
-  { id: 3, name: "컴퓨터구조 팀플", to: "/project/3/dashboard" },
-  { id: 4, name: "운영체제 팀플", to: "/project/4/dashboard" },
-];
+const API_URL = import.meta.env.VITE_DEV_PROXY_URL;
 
 const PageNavBar = ({ projectName }) => {
   const { projectID } = useParams();
   const location = useLocation();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const isCalendarPage = location.pathname.endsWith("/calendar");
-  const isSettingPage = location.pathname === "/setting";
-  const isInvalidProject = !projectID || projectID === "undefined";
-  const isBasePath = location.pathname === `/project/${projectID}`;
+
+  const currentProjectIdFromURL = projectID ? parseInt(projectID, 10) : null;
+
+  const fetchProjects = useCallback(async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`${API_URL}/api/projects/me`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setProjects(data);
+      } else {
+        const errorText = await response.text();
+        console.error(
+          "HTTP Status:",
+          response.status,
+          "Error Body:",
+          errorText
+        );
+        setError(`프로젝트 로드 실패 (HTTP ${response.status})`);
+      }
+      setLoading(false);
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
 
   const pages = [
     {
@@ -72,7 +105,7 @@ const PageNavBar = ({ projectName }) => {
   ));
 
   const toggleModal = () => {
-    if (isCalendarPage || isBasePath || isInvalidProject) return;
+    if (isCalendarPage) return;
     setIsModalOpen(!isModalOpen);
   };
 
@@ -80,22 +113,31 @@ const PageNavBar = ({ projectName }) => {
     setIsModalOpen(false);
   };
 
-  if (isSettingPage) {
-    return null;
-  }
+  const projectList = projects.map((project) => {
+    const isCurrentProject = project.projectPk === currentProjectIdFromURL;
+
+    return (
+      <div
+        key={project.projectPk}
+        className={`Project-item ${isCurrentProject ? "selected" : ""}`}
+      >
+        <Link
+          to={`/project/${project.projectPk}`}
+          className={`ProjectButton ${isCurrentProject ? "active" : ""}`}
+          onClick={closeModal}
+        >
+          <div className="projectSelect"></div>
+          <div className="ProjectText">{project.projectName}</div>
+        </Link>
+      </div>
+    );
+  });
 
   return (
     <>
       <div className="NavBar-bottom">
         <div className="bottom">
-          <div
-            className={`ProjectName ${
-              isCalendarPage || isBasePath || isInvalidProject || isSettingPage
-                ? "disabled"
-                : ""
-            }`}
-            onClick={toggleModal}
-          >
+          <div className="ProjectName" onClick={toggleModal}>
             프로젝트 목록
           </div>
           <div className="button">
@@ -112,18 +154,15 @@ const PageNavBar = ({ projectName }) => {
             <div className="ProjectListContainer">
               <h2 className="projectTitle">프로젝트</h2>
               <div className="projectList">
-                {projects.map((project) => (
-                  <div key={project.id} className="Project-item">
-                    <Link
-                      to={project.to}
-                      className="ProjectButton"
-                      onClick={closeModal}
-                    >
-                      <div className="projectSelect"></div>
-                      <div className="ProjectText">{project.name}</div>
-                    </Link>
-                  </div>
-                ))}
+                {loading ? (
+                  <p className="loadingText">로딩 중...</p>
+                ) : error ? (
+                  <p className="errorText">에러: {error}</p>
+                ) : projects.length > 0 ? (
+                  projectList
+                ) : (
+                  <p className="noProjects">프로젝트가 없습니다.</p>
+                )}
               </div>
             </div>
             <div className="modalCloseBtn" onClick={closeModal}>
