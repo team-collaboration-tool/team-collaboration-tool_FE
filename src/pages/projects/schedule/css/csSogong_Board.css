@@ -146,7 +146,7 @@
 }
 
 .post_title {
-    flex-basis: 37.5%;
+    flex-basis: 47.5%;
     font-weight: 500;
     color: rgb(0, 0, 0);
     overflow: hidden;
@@ -183,6 +183,7 @@
     color: rgb(0, 0, 0);
     text-align: right;
     font-weight: 600;
+    display: none;
 }
 
 #GSP_write p {
@@ -332,9 +333,11 @@
 
     z-index: 4;
 }
+
 .GaeSiPan_Write.on {
     display: block;
 }
+
 /* 게시글 수정일 때, 투표 체크박스 버튼 숨기기 */
 .GaeSiPan_Write.edit-mode #is-vote,
 .GaeSiPan_Write.edit-mode label[for="is-vote"],
@@ -509,6 +512,7 @@
     white-space: nowrap;
     border-radius: 0.5rem;
     border: none;
+    margin-bottom: 1rem;
 }
 
 .GSPW_field_left:has(#is-vote:checked) .GSPW_vote_button {
@@ -839,7 +843,7 @@
     cursor: pointer;
 
     padding: 0.5rem 1.5rem;
-    background-color: #33A1E0;
+    background-color: rgb(51, 161, 224);
     color: #ffffff;
     font-weight: 600;
     border-radius: 0.5rem;
@@ -903,55 +907,48 @@
 /* 누가 투표했는지 결과창 */
 .VoteResult_item_WhoVoted {
     position: absolute;
-    /* VoteResult_item 기준으로 위치하기 */
     top: 50%;
-    right: 10px;
-    transform: translate(110%, -50%);
+    right: 15px;
+    transform: translate(120%, -50%);
     z-index: 10;
-    width: 120px;
-    max-height: 160px;
 
+    min-width: 120px;
+    max-height: 160px;
+    padding: 12px;
     display: none;
     flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
+    gap: 6px;
 
-    padding: 8px 10px;
-    border: 1px solid rgba(0, 0, 0, 0.8);
+    background-color: rgb(135, 215, 255);
+    border: 1px solid black;
     border-radius: 8px;
-    background-color: #ffffff;
-    color: #000000;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-    box-sizing: border-box;
 
-    overflow-y: auto;
-    /* 인원이 많으면 스크롤 */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-sizing: border-box;
+    color: #333;
+    font-size: 14px;
+    overflow: visible;
+
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.2s ease;
 }
 .VoteResult_item_WhoVoted.on {
     display: flex;
+    opacity: 1;
 }
-/* before, after == 디자인적 요소 */
 .VoteResult_item_WhoVoted::before {
     content: "";
     position: absolute;
     top: 50%;
     left: -6px;
-    transform: translateY(-50%);
-    border-width: 6px;
-    border-style: solid;
-    border-color: transparent #ffffff transparent transparent;
-}
-.VoteResult_item_WhoVoted::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: -7px;
-    transform: translateY(-50%);
 
-    border-width: 7px;
-    border-style: solid;
-    border-color: transparent rgba(0, 0, 0, 0.8) transparent transparent;
-    z-index: -1;
+    width: 10px;
+    height: 10px;
+    background-color: rgb(135, 215, 255);
+    border-left: 1px solid black;
+    border-bottom: 1px solid black;
+
+    transform: translateY(-50%) rotate(45deg);
 }
 
 .VoteResult_revote_button {
