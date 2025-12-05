@@ -19,44 +19,9 @@ const PageNavBar = ({ projectName }) => {
   const [error, setError] = useState(null);
 
   const isCalendarPage = location.pathname.endsWith("/calendar");
-
-  const currentProjectIdFromURL = projectID ? parseInt(projectID, 10) : null;
-
-  const fetchProjects = useCallback(async () => {
-    try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(`${API_URL}/api/projects/me`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setProjects(data);
-      } else {
-        const errorText = await response.text();
-        console.error(
-          "HTTP Status:",
-          response.status,
-          "Error Body:",
-          errorText
-        );
-        setError(`프로젝트 로드 실패 (HTTP ${response.status})`);
-      }
-      setLoading(false);
-    } catch (err) {
-      setError(err.message);
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchProjects();
-  }, [fetchProjects]);
+  const isSettingPage = location.pathname.endsWith("/setting");
+  const isInvalidProject = !projectID || projectID === "undefined";
+  const isBasePath = location.pathname === `/project/${projectID}`;
 
   const pages = [
     {
