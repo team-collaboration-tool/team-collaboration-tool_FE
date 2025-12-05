@@ -914,12 +914,14 @@ export default function Board() {
                 VOTE_PAGE_class && VOTE_PAGE_class.classList.remove("off");
             }
 
-            // 투표 중복,익명 여부
+            // 투표 중복, 익명 여부
             const allowMulti = !!(post.vote && post.vote.allowMultipleChoices);
             const isAnonymous = !!(post.vote && post.vote.isAnonymous);
 
+
+            // POST : /api/votes/options/{optionId}/cast == 투표
+            // PUT : /api/votes/options/{optionId}/cast == 재투표
             if (completeBtn) {
-                // POST / PUT : /api/votes/options/{optionId}/cast == 투표
                 completeBtn.addEventListener("click", () => {
                     const checkedInputs = Array.from(
                         seeContainer.querySelectorAll('input[name="VOTE_item_check"]:checked')
@@ -930,11 +932,13 @@ export default function Board() {
                         return;
                     }
 
-                    // 단일/복수 선택에 따라 선택된 optionId 배열 만들기
+                    // 단일 or 복수 선택에 따른optionId
                     const selectedOptionIds = checkedInputs.map((input) => input.value);
-
                     const token = localStorage.getItem("token");
-                    const method = "PUT"; // 지금처럼 PUT 고정
+
+                    // 첫투표 or 재투표냐에 따라, POST or PUT 분리
+                    const method = (isReVote ? "PUT" : "POST");
+                    console.log(`현재 투표 요청: method == ${method} , isReVote == ${isReVote}`);
 
                     const castOne = (optionId) => {
                         const requestUrl = `${baseURL}/api/votes/options/${optionId}/cast`;
@@ -946,7 +950,7 @@ export default function Board() {
                         }).then(async (res) => {
                             const resultText = await res.text();
                             console.log(
-                                `PUT : /api/votes/options/${optionId}/cast 응답 == ${res.status}`,
+                                `${method} : /api/votes/options/${optionId}/cast 응답 == ${res.status}`,
                                 resultText
                             );
                             if (res.status !== 200 && res.status !== 201) {
@@ -985,7 +989,7 @@ export default function Board() {
                     VOTE_PAGE_class && VOTE_PAGE_class.classList.remove("off");
 
                     // 상태는 이미 isReVote = true 상태임
-                    console.log("🔄 재투표 화면으로 전환 (API 호출 아님)");
+                    console.log("재투표 화면으로 전환, API 호출 X");
                 });
             }
 

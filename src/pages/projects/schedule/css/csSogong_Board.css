@@ -146,7 +146,7 @@
 }
 
 .post_title {
-    flex-basis: 37.5%;
+    flex-basis: 47.5%;
     font-weight: 500;
     color: rgb(0, 0, 0);
     overflow: hidden;
@@ -183,6 +183,7 @@
     color: rgb(0, 0, 0);
     text-align: right;
     font-weight: 600;
+    display: none;
 }
 
 #GSP_write p {
@@ -511,6 +512,7 @@
     white-space: nowrap;
     border-radius: 0.5rem;
     border: none;
+    margin-bottom: 1rem;
 }
 
 .GSPW_field_left:has(#is-vote:checked) .GSPW_vote_button {
