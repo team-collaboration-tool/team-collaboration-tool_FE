@@ -119,7 +119,7 @@ const NavBar = () => {
             <input
               type="text"
               className="SearchBar"
-              placeholder="참여하고 싶은 프로젝트 코드를 입력해주세요"
+              placeholder="참여하고 싶은 프로젝트 코드를 입력 후 <enter>를 입력해주세요"
               value={projectCode}
               onChange={(e) => setProjectCode(e.target.value)}
               onKeyDown={(e) => {
