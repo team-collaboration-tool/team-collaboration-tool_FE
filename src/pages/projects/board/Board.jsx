@@ -671,10 +671,12 @@ export default function Board() {
                 </div>
 
                 <div class="VOTE_Result">
-                  <h1 id="VoteResult_title">${escapeHTML(title)} 결과</h1>
-                  <div class = "VoteResult_grid">
+                  <h1 id="VoteResult_title">${escapeHTML(title)} (결과)</h1>
+                  <h2 id="VOTE_isitMulti">${multiText}</h2>
+                  <h2 id="VOTE_isitSecret">${anonymousText}</h2>
+                  <div class="VoteResult_grid">
                     ${resultsHTML}
-                    </div>
+                  </div>
                   <button class="VoteResult_revote_button">재투표하기</button>
                 </div>
               </div>
@@ -861,6 +863,29 @@ export default function Board() {
             const completeBtn = seeContainer.querySelector(".VOTE_complete_button");
             const revoteBtn = seeContainer.querySelector(".VoteResult_revote_button");
 
+            // 투표 마감 시간(endTime) 기반 버튼 제어
+            let isVoteClosed = false;
+            console.log
+            if (post.vote && post.vote.endTime) {
+                try {
+                    const end = new Date(post.vote.endTime);
+                    if (!isNaN(end.getTime())) {
+                        const now = new Date();
+                        if (now > end) {
+                            isVoteClosed = true;
+                        }
+                    }
+                } catch (e) {
+                    console.warn("투표 마감 시간 파싱 실패 == ", post.vote.endTime, e);
+                }
+            }
+
+            // 마감된 투표라면 투표, 재투표 버튼 숨기기
+            if (isVoteClosed) {
+                if (completeBtn) completeBtn.style.display = "none";
+                if (revoteBtn) revoteBtn.style.display = "none";
+            }
+
             // 투표 후, 게시글 1개 상세조회 리프레쉬
             const refreshPostDetail = () => {
                 const token = localStorage.getItem("token");
@@ -919,9 +944,10 @@ export default function Board() {
             const isAnonymous = !!(post.vote && post.vote.isAnonymous);
 
 
-            // POST : /api/votes/options/{optionId}/cast == 투표
-            // PUT : /api/votes/options/{optionId}/cast == 재투표
-            if (completeBtn) {
+            // POST : /api/votes/options/{optionId}/cast == 첫 투표
+            // PUT : /api/votes/options/{optionId}/cast == 단일선택 재투표
+            // PUT : /api/votes/{voteId}/recast == 중복투표 재투표
+            if (completeBtn && !isVoteClosed) {
                 completeBtn.addEventListener("click", () => {
                     const checkedInputs = Array.from(
                         seeContainer.querySelectorAll('input[name="VOTE_item_check"]:checked')
@@ -935,6 +961,54 @@ export default function Board() {
                     // 단일 or 복수 선택에 따른optionId
                     const selectedOptionIds = checkedInputs.map((input) => input.value);
                     const token = localStorage.getItem("token");
+
+
+                    // 중복투표 재투표
+                    if (allowMulti && isReVote) {
+                        const voteContainer = seeContainer.querySelector(".VOTE_container");
+                        const voteId = voteContainer?.dataset.voteId;
+
+                        if (!voteId) {
+                            console.error("재투표용 voteId를 찾을 수 없습니다.");
+                            alert("투표 정보가 올바르지 않습니다. 다시 시도해주세요.");
+                            return;
+                        }
+
+                        const body = {
+                            selectedOptionIds: selectedOptionIds.map((id) => Number(id)),
+                        };
+                        console.log("PUT /api/votes/{voteId}/recast 요청 body == ", body);
+
+                        fetch(`${baseURL}/api/votes/${voteId}/recast`, {
+                            method: "PUT",
+                            headers: {
+                                "Authorization": `Bearer ${token}`,
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify(body),
+                        })
+                            .then(async (res) => {
+                                const text = await res.text();
+                                console.log(
+                                    `PUT : /api/votes/${voteId}/recast 응답 == ${res.status}`,
+                                    text
+                                );
+                                if (res.status !== 200) {
+                                    throw new Error(`재투표 실패 (${res.status}) : ${text}`);
+                                }
+                                alert("재투표가 완료되었습니다.");
+                                isReVote = true;
+                                // 투표 후 상세 다시 GET
+                                refreshPostDetail();
+                            })
+                            .catch((err) => {
+                                console.error("예외처리! PUT : /api/votes/{voteId}/recast == ", err);
+                                alert(`투표 중 오류가 발생했습니다.\n${err.message}`);
+                            });
+
+                        // 여기서 기존 /options/{optionId}/cast 로직은 실행하지 않도록 바로 return
+                        return;
+                    }
 
                     // 첫투표 or 재투표냐에 따라, POST or PUT 분리
                     const method = (isReVote ? "PUT" : "POST");
@@ -975,6 +1049,7 @@ export default function Board() {
                         })
                         .catch((err) => {
                             console.error("예외처리! PUT : /api/votes/options == ", err);
+                            console.error("예외처리! /api/votes/options/{optionId}/cast == ", err);
                             alert(`투표 중 오류가 발생했습니다.\n${err.message}`);
                         });
                 });
@@ -982,7 +1057,7 @@ export default function Board() {
 
 
             // PUT : /api/votes/options == 재투표하기
-            if (revoteBtn) {
+            if (revoteBtn && !isVoteClosed) {
                 revoteBtn.addEventListener("click", () => {
                     // 단순히 화면만 전환, API 호출 X
                     resultPanel && resultPanel.classList.remove("on");
@@ -1091,6 +1166,19 @@ export default function Board() {
             const files = (fileEl && fileEl.files) || null;
             const content = contentEl && contentEl.value;
             const hasVoting = isVoteEl && isVoteEl.checked;
+
+            // 투표 마감시간
+            const voteEndDateInput = document.getElementById("VoteMake_EndDate");
+            const voteEndTimeInput = document.getElementById("VoteMake_EndTime");
+            let voteEndTime = null;
+            if (
+                voteEndDateInput &&
+                voteEndTimeInput &&
+                voteEndDateInput.value &&
+                voteEndTimeInput.value
+            ) {
+                voteEndTime = `${voteEndDateInput.value}T${voteEndTimeInput.value}:00`;
+            }
 
             // 공지 개수 10개 over인 경우,
             if (
@@ -1235,8 +1323,7 @@ export default function Board() {
                     ? {
                         voteTitle: tempVoteData.title,
                         voteOptions: tempVoteData.optionContents,
-                        // 필요하면 나중에 사용
-                        // voteEndTime: tempVoteData.endTime,
+                        voteEndTime: tempVoteData.endTime,
                         allowMultipleChoices: !!tempVoteData.allowMultipleChoices,
                         isAnonymous: !!tempVoteData.isAnonymous,
                     }
