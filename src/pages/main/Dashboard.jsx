@@ -11,7 +11,7 @@ const Dashboard = () => {
     const token = localStorage.getItem("token");
     if (!token) {
       alert("로그인이 필요합니다. 로그인 후 이용해주세요.");
-      navigate("/login");
+      navigate("/");
       return;
     }
 
@@ -20,11 +20,10 @@ const Dashboard = () => {
       try {
         const userData = JSON.parse(storedUser);
         setUser(userData);
-        console.log("환영합니다!", userData.name || userData.email);
       } catch (error) {
         console.error("사용자 정보 파싱 오류:", error);
         localStorage.clear();
-        navigate("/login");
+        navigate("/");
       }
     }
   }, [navigate]);

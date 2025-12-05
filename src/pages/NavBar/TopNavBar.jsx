@@ -28,6 +28,7 @@ const NavBar = () => {
 
         if (response.ok) {
           const data = await response.json();
+          localStorage.setItem("user", data);
           setFullName(data.name || "");
           setUserName(data.name ? data.name.charAt(0) : "");
         }

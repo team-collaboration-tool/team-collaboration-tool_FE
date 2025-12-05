@@ -35,7 +35,6 @@ const Login = () => {
 
       if (response.ok) {
         localStorage.setItem("token", result.token);
-        localStorage.setItem("user", JSON.stringify(result.user));
         navigate("/dashboard");
       } else {
         alert(result.message || "존재하지 않는 아이디이거나 잘못된 비밀번호입니다.");
