@@ -30,7 +30,6 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-container">
-      {user ? <h2>{user.name || user.email}님, 환영합니다!</h2> : <div></div>}
       <Calendar />
     </div>
   );
