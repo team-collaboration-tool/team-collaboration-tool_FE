@@ -9,38 +9,36 @@ import logo from "../../asset/HYUPMIN_logo.svg";
 const API_URL = import.meta.env.VITE_DEV_PROXY_URL;
 
 const NavBar = () => {
-  const token = localStorage.getItem("token");
   const navigate = useNavigate();
+  const token = localStorage.getItem("token");
   const [projectCode, setProjectCode] = useState("");
   const [userName, setUserName] = useState("");
   const [fullName, setFullName] = useState("");
 
-  // 사용자 정보 가져오기
   useEffect(() => {
-    const fetchUserInfo = async () => {
-      try {
-        const response = await fetch(`${API_URL}/api/users/me`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+    const loadUserFromStorage = () => {
+      const stored = localStorage.getItem("user");
 
-        if (response.ok) {
-          const data = await response.json();
-          localStorage.setItem("user", data);
-          setFullName(data.name || "");
-          setUserName(data.name ? data.name.charAt(0) : "");
-        }
-      } catch (error) {
-        console.error("사용자 정보 로딩 실패:", error);
+      if (!stored) {
+        setFullName("");
+        setUserName("");
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(stored);
+        const name = parsed && parsed.name ? parsed.name : "";
+        setFullName(name);
+        setUserName(name ? name.charAt(0) : "");
+      } catch (storageError) {
+        console.error("저장된 사용자 정보 파싱 실패:", storageError);
+        setFullName("");
+        setUserName("");
       }
     };
 
-    if (token) {
-      fetchUserInfo();
-    }
-  }, [token]);
+    loadUserFromStorage();
+  }, []);
 
   const handleCreateProject = async () => {
     try {
@@ -62,7 +60,7 @@ const NavBar = () => {
       const data = await response.json();
       const newProjectId = data.projectPk;
 
-      alert("프로젝트가 생성되었습니다. 프로젝트 설정 페이지로 이동합니다.")
+      alert("프로젝트가 생성되었습니다. 프로젝트 설정 페이지로 이동합니다.");
 
       navigate(`/project/${newProjectId}/setting`);
     } catch (error) {
@@ -103,6 +101,7 @@ const NavBar = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     navigate("/");
   };
 
