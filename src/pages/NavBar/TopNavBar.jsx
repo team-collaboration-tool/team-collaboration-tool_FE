@@ -90,7 +90,6 @@ const NavBar = () => {
       const data = await response.json();
       const projectId = data.projectId;
 
-      navigate(`/project/${projectId}`);
       setProjectCode("");
     } catch (error) {
       console.error("프로젝트 참여 중 오류:", error);
