@@ -1,5 +1,5 @@
 // Layout.jsx
-import React from "react";
+import React, { use, useState } from "react";
 import { Outlet, useLocation, useParams } from "react-router-dom";
 import TopNavBar from "./pages/NavBar/TopNavBar";
 import LeftNavBar from "./pages/NavBar/LeftNavBar";
@@ -10,6 +10,8 @@ const Layout = ({ showPageNav }) => {
   const location = useLocation();
   const params = useParams();
   const currentProjectID = params.projectID;
+
+  const [leftContentState, setLeftContentState] = useState("PROJECT_LIST");
 
   const isCalendarPage = /^\/project\/[^\/]+\/calendar$/.test(
     location.pathname
@@ -49,6 +51,7 @@ const Layout = ({ showPageNav }) => {
         <LeftNavBar
           isCalendarPage={isCalendarPage}
           currentProjectID={currentProjectID}
+          onContentChange={setLeftContentState}
         />
       )}
 
@@ -61,7 +64,7 @@ const Layout = ({ showPageNav }) => {
       {/* showPageNav가 true일 때 하단 네비바 표시 */}
       {shouldShowBottomNavBar && (
         <div className="Layout-footer">
-          <BottomNavBar />
+          <BottomNavBar leftContentState={leftContentState} />
         </div>
       )}
     </div>

@@ -10,7 +10,7 @@ import settingIcon1 from "../../asset/Icon/settingIcon-01.svg";
 
 const API_URL = import.meta.env.VITE_DEV_PROXY_URL;
 
-const PageNavBar = ({ projectName }) => {
+const PageNavBar = ({ projectName, leftContentState }) => {
   const { projectID } = useParams();
   const location = useLocation();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -23,6 +23,47 @@ const PageNavBar = ({ projectName }) => {
   const isInvalidProject = !projectID || projectID === "undefined";
   const isBasePath = location.pathname === `/project/${projectID}`;
 
+  const currentProjectIdFromURL = projectID ? parseInt(projectID, 10) : null;
+
+  const isCalendarViewActive =
+    leftContentState === "SCHEDULE_LIST" ||
+    leftContentState === "SCHEDULE_VIEW";
+
+  const fetchProjects = useCallback(async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`${API_URL}/api/projects/me`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setProjects(data);
+      } else {
+        const errorText = await response.text();
+        console.error(
+          "HTTP Status:",
+          response.status,
+          "Error Body:",
+          errorText
+        );
+        setError(`프로젝트 로드 실패 (HTTP ${response.status})`);
+      }
+      setLoading(false);
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
   if (isSettingPage) {
     return null;
   }
@@ -74,8 +115,9 @@ const PageNavBar = ({ projectName }) => {
   ));
 
   const toggleModal = () => {
-    if (isCalendarPage) return;
-    setIsModalOpen(!isModalOpen);
+    if (isCalendarViewActive) {
+      setIsModalOpen(!isModalOpen);
+    }
   };
 
   const closeModal = () => {
@@ -106,7 +148,14 @@ const PageNavBar = ({ projectName }) => {
     <>
       <div className="NavBar-bottom">
         <div className="bottom">
-          <div className="ProjectName" onClick={toggleModal}>
+          <div
+            className="ProjectName"
+            onClick={toggleModal}
+            style={{
+              cursor: isCalendarViewActive ? "pointer" : "default",
+              opacity: isCalendarViewActive ? 1 : 0.6,
+            }}
+          >
             프로젝트 목록
           </div>
           <div className="button">

@@ -17,6 +17,8 @@ const Calendar = () => {
   const [allSchedules, setAllSchedules] = useState([]);
   const [scheduleLoading, setScheduleLoading] = useState(false);
   const [scheduleError, setScheduleError] = useState(null);
+  const [myUserInfo, setMyUserInfo] = useState(null);
+  const [myUserPk, setMyUserPk] = useState(null);
 
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const query = new URLSearchParams(location.search);
@@ -25,15 +27,41 @@ const Calendar = () => {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
-  const firstDay = new Date(year, month, 1); // 이번 달의 첫째 날
-  const startDay = new Date(firstDay); // 달력의 시작 날짜는 이번 달의 첫 날
-  startDay.setDate(1 - firstDay.getDay()); // 첫째 날이 속한 주의 일요일로 설정
+  const firstDay = new Date(year, month, 1);
+  const startDay = new Date(firstDay);
+  startDay.setDate(1 - firstDay.getDay());
 
-  const lastDay = new Date(year, month + 1, 0); // 이번 달의 마지막 날
+  const lastDay = new Date(year, month + 1, 0);
   const endDay = new Date(lastDay);
-  endDay.setDate(lastDay.getDate() + (6 - lastDay.getDay())); // 마지막 날이 속한 주의 토요일로 설정'
+  endDay.setDate(lastDay.getDate() + (6 - lastDay.getDay()));
 
   const isDashboard = location.pathname === "/dashboard";
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await fetch(`${API_URL}/api/users/me`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log("사용자 정보:", data);
+          setMyUserInfo(data);
+        } else {
+          console.error("사용자 정보 조회 실패:", response.status);
+        }
+      } catch (err) {
+        console.error("사용자 정보 조회 에러:", err);
+      }
+    };
+    fetchUserInfo();
+  }, []);
 
   useEffect(() => {
     const updateMaxSchedules = () => {
@@ -50,7 +78,7 @@ const Calendar = () => {
       }
     };
 
-    updateMaxSchedules(); // 초기 호출 추가
+    updateMaxSchedules();
 
     let resizeTimer;
     const debouncedUpdate = () => {
@@ -115,14 +143,16 @@ const Calendar = () => {
   };
 
   const fetchSchedules = useCallback(async () => {
+    if (!myUserInfo) {
+      return;
+    }
+
     let apiUrl;
     const projectIDToFilter = currentProjectID;
 
     if (isDashboard) {
-      // 마이페이지 전체 일정 조회
       apiUrl = `${API_URL}/api/calendar/me`;
     } else if (currentProjectID) {
-      // 프로젝트별 일정 조회
       apiUrl = `${API_URL}/api/calendar/projects/${currentProjectID}`;
     } else {
       return;
@@ -141,11 +171,13 @@ const Calendar = () => {
           Authorization: `Bearer ${token}`,
         },
       });
+
       if (response.ok) {
         const data = await response.json();
 
         let finalSchedules = data;
 
+        // 프로젝트 필터링 (대시보드가 아닐 때)
         if (projectIDToFilter && !isDashboard) {
           let numericProjectID = parseInt(projectIDToFilter);
           finalSchedules = data.filter((schedule) => {
@@ -153,17 +185,49 @@ const Calendar = () => {
           });
         }
 
-        setAllSchedules(finalSchedules);
-      } else {
-        const errorText = await response.text();
-        console.error(
-          "Schedule HTTP Status:",
-          response.status,
-          "Error Body:",
-          errorText
-        );
-        setScheduleError(`일정 로드 실패 (HTTP ${response.status})`);
-        setAllSchedules([]);
+        // myUserPk를 일정 데이터에서 추출 (첫 실행시)
+        if (!myUserPk && finalSchedules.length > 0) {
+          // 내 email로 participants에서 userPk 찾기
+          for (const schedule of finalSchedules) {
+            if (Array.isArray(schedule.participants)) {
+              const me = schedule.participants.find(
+                (p) => p.email === myUserInfo.email
+              );
+              if (me) {
+                setMyUserPk(me.userPk);
+                break;
+              }
+            }
+          }
+        }
+
+        // createUserId + participants.userPk 기반 필터링
+        const mySchedules = finalSchedules.filter((schedule) => {
+          // createUserName으로 확인 (임시)
+          const isCreatorByName = schedule.createUserName === myUserInfo.name;
+
+          // myUserPk가 있으면 participants에서 확인
+          const isParticipant =
+            myUserPk &&
+            Array.isArray(schedule.participants) &&
+            schedule.participants.some(
+              (participant) => Number(participant.userPk) === Number(myUserPk)
+            );
+
+          // email로 participants 확인 (보조)
+          const isParticipantByEmail =
+            Array.isArray(schedule.participants) &&
+            schedule.participants.some(
+              (participant) => participant.email === myUserInfo.email
+            );
+
+          const result =
+            isCreatorByName || isParticipant || isParticipantByEmail;
+
+          return result;
+        });
+
+        setAllSchedules(mySchedules);
       }
     } catch (err) {
       setScheduleError(err.message);
@@ -171,7 +235,15 @@ const Calendar = () => {
     } finally {
       setScheduleLoading(false);
     }
-  }, [currentProjectID, isDashboard, refreshParam, year, month]);
+  }, [
+    currentProjectID,
+    isDashboard,
+    refreshParam,
+    year,
+    month,
+    myUserInfo,
+    myUserPk,
+  ]);
 
   useEffect(() => {
     fetchSchedules();
@@ -179,7 +251,6 @@ const Calendar = () => {
 
   useEffect(() => {
     const handleScheduleUpdate = () => {
-      console.log("scheduleUpdated 이벤트 수신!");
       fetchSchedules();
     };
 
@@ -242,7 +313,7 @@ const Calendar = () => {
             <div key={weekIndex} className="calendar-day">
               {week.map((day, dayIndex) => {
                 const isClickable = !isDashboard && day.getMonth() === month;
-                const dailySchedules = getDailySchedules(day); // 해당 날짜의 일정 목록 가져오기
+                const dailySchedules = getDailySchedules(day);
 
                 const cellClasses = [
                   "calendar-day-cell",
@@ -259,12 +330,10 @@ const Calendar = () => {
                     onClick={() => handleDateClick(day)}
                   >
                     <div className="calendar-date">{day.getDate()}</div>
-                    {/* 일정 표시 영역 */}
                     <div className="schedule-list-in-cell">
-                      {dailySchedules.slice(0, maxSchedulesToShow).map(
-                        (
-                          schedule // 최대 2개만 표시
-                        ) => (
+                      {dailySchedules
+                        .slice(0, maxSchedulesToShow)
+                        .map((schedule) => (
                           <div
                             key={schedule.eventPk}
                             className="calendar-schedule-item"
@@ -285,8 +354,7 @@ const Calendar = () => {
                               ? `[${schedule.projectName}] ${schedule.title}`
                               : schedule.title}
                           </div>
-                        )
-                      )}
+                        ))}
                       {dailySchedules.length > maxSchedulesToShow && (
                         <div className="more-schedules">
                           + {dailySchedules.length - maxSchedulesToShow}개의
