@@ -79,6 +79,12 @@ const ProjectSetting = () => {
 
   // 프로젝트 이름 수정
   const handleUpdateProjectName = async () => {
+    
+    if (!newProjectName.trim()) {
+      alert("프로젝트명을 입력해주세요.");
+      return;
+    }
+    
     try {
       const response = await fetch(`${API_URL}/api/projects/${projectId}`, {
         method: "PUT",

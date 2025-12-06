@@ -38,6 +38,16 @@ const NavBar = () => {
     };
 
     loadUserFromStorage();
+
+    const handleStorageUpdate = () => {
+      loadUserFromStorage();
+    };
+
+    window.addEventListener("userInfoUpdated", handleStorageUpdate);
+
+    return () => {
+      window.removeEventListener("userInfoUpdated", handleStorageUpdate);
+    };
   }, []);
 
   const handleCreateProject = async () => {

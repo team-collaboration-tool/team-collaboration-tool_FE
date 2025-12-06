@@ -40,7 +40,7 @@ const Calendar = () => {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
         const response = await fetch(`${API_URL}/api/users/me`, {
           method: "GET",
           headers: {
