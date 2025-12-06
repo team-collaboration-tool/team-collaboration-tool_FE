@@ -150,7 +150,6 @@ const PageNavBar = ({ leftContentState }) => {
             className="ProjectName"
             onClick={toggleModal}
             style={{
-              // isProjectListDisabled를 기준으로 스타일 적용
               cursor: isProjectListDisabled ? "default" : "pointer",
               opacity: isProjectListDisabled ? 0.6 : 1,
             }}
