@@ -437,6 +437,10 @@ export default function TimeSchedulerPage() {
   // ============================================================
   // 버튼: 시간조율표 생성
   const onMakeClick = React.useCallback(() => {
+    if (!whatName || whatName.trim() === "") {
+      alert("조율표 이름을 입력하세요");
+      return;
+    }
     if (!howDateLong) {
       alert("며칠치를 생성할지 선택하세요");
       return;
