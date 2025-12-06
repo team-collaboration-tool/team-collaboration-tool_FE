@@ -29,6 +29,7 @@ const Layout = ({ showPageNav }) => {
     const path = location.pathname;
 
     if (path === "/dashboard") return false;
+    if (path === "/setting") return false;
     if (path === "/" || path.startsWith("/sign")) return false;
 
     return true;
