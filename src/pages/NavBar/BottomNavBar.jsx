@@ -10,7 +10,7 @@ import settingIcon1 from "../../asset/Icon/settingIcon-01.svg";
 
 const API_URL = import.meta.env.VITE_DEV_PROXY_URL;
 
-const PageNavBar = ({ projectName, leftContentState }) => {
+const PageNavBar = ({ leftContentState }) => {
   const { projectID } = useParams();
   const location = useLocation();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -28,6 +28,11 @@ const PageNavBar = ({ projectName, leftContentState }) => {
   const isCalendarViewActive =
     leftContentState === "SCHEDULE_LIST" ||
     leftContentState === "SCHEDULE_VIEW";
+
+  const isBaseProjectRoute =
+    projectID && location.pathname === `/project/${projectID}`;
+
+  const isProjectListDisabled = isBaseProjectRoute && !isCalendarViewActive;
 
   const fetchProjects = useCallback(async () => {
     try {
@@ -115,9 +120,10 @@ const PageNavBar = ({ projectName, leftContentState }) => {
   ));
 
   const toggleModal = () => {
-    if (isCalendarViewActive) {
-      setIsModalOpen(!isModalOpen);
+    if (isProjectListDisabled) {
+      return;
     }
+    setIsModalOpen(!isModalOpen);
   };
 
   const closeModal = () => {
@@ -152,8 +158,9 @@ const PageNavBar = ({ projectName, leftContentState }) => {
             className="ProjectName"
             onClick={toggleModal}
             style={{
-              cursor: isCalendarViewActive ? "pointer" : "default",
-              opacity: isCalendarViewActive ? 1 : 0.6,
+              // isProjectListDisabled를 기준으로 스타일 적용
+              cursor: isProjectListDisabled ? "default" : "pointer",
+              opacity: isProjectListDisabled ? 0.6 : 1,
             }}
           >
             프로젝트 목록
