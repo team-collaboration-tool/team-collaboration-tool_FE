@@ -224,7 +224,7 @@ const ProjectSetting = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${sessionStorage.getItem("token")}`,
         },
-        body: JSON.stringify({ projectName: inputProjectName }),s
+        body: JSON.stringify({ projectName: inputProjectName }),
       });
       if (response.ok) {
         alert("프로젝트가 삭제되었습니다.");
@@ -302,6 +302,7 @@ const ProjectSetting = () => {
                   value={newProjectName}
                   onChange={(e) => setNewProjectName(e.target.value)}
                   className="ps-name-input"
+                  maxLength="30"
                 />
                 {renderJoinCodeChip()}
                 <div className="ps-name-edit-actions">

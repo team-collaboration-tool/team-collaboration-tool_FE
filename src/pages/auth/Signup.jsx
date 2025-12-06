@@ -39,15 +39,21 @@ const Signup = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    let processedValue = value;
+    
+    if (name === 'phonenumber') {
+      processedValue = value.replace(/[^0-9]/g, '').slice(0, 11);
+    }
+    
+    setFormData(prev => ({ ...prev, [name]: processedValue }));
     
     if (name === 'email') {
       setEmailCheckStatus('');
     }
     
     if (name === 'password' || name === 'passwordConfirm') {
-      const newPassword = name === 'password' ? value : formData.password;
-      const newPasswordConfirm = name === 'passwordConfirm' ? value : formData.passwordConfirm;
+      const newPassword = name === 'password' ? processedValue : formData.password;
+      const newPasswordConfirm = name === 'passwordConfirm' ? processedValue : formData.passwordConfirm;
       setPasswordError(newPassword && newPasswordConfirm && newPassword !== newPasswordConfirm);
     }
   };
@@ -59,9 +65,8 @@ const Signup = () => {
       return;
     }
 
-    const emailInput = emailInputRef.current;
-    if (emailInput && !emailInput.validity.valid) {
-      emailInput.reportValidity();
+    if (!/^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[a-zA-Z]+$/.test(formData.email)) {
+      alert("이메일 형식이 올바르지 않습니다.");
       return;
     }
 
@@ -123,12 +128,37 @@ const Signup = () => {
 
   // 다음 단계로 이동
   const handleNextStep = () => {
+    if (!/^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[a-zA-Z]+$/.test(formData.email)) {
+      alert("이메일 형식이 올바르지 않습니다.");
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9!@#$%^&*()\-_+=]{8,20}$/.test(formData.password)) {
+      alert("비밀번호는 8~20자의 영문 대소문자, 숫자, 특수문자(!@#$%^&*()-_+=)만 사용 가능합니다.");
+      return;
+    }
+
+    if (formData.password !== formData.passwordConfirm) {
+      alert("비밀번호가 일치하지 않습니다.");
+      return;
+    }
+
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
     }
   };
 
   const handleSignup = async () => {
+    if (!formData.name.trim()) {
+      alert("이름을 입력해주세요.");
+      return;
+    }
+
+    if (!/^\d{11}$/.test(formData.phonenumber)) {
+      alert("전화번호는 숫자 11자리를 입력해주세요.");
+      return;
+    }
+
     try {
       const response = await fetch(`${API_URL}/api/users/signup`, {
         method: "POST",
@@ -199,6 +229,7 @@ const Signup = () => {
               value={formData.email}
               onChange={handleInputChange}
               ref={emailInputRef}
+              maxLength="30"
               required
             />
             <button 
@@ -221,6 +252,7 @@ const Signup = () => {
             type="password"
             id="password"
             name="password"
+            maxLength="20"
             value={formData.password}
             onChange={handleInputChange}
             className={passwordError ? 'error' : ''}
@@ -244,6 +276,7 @@ const Signup = () => {
             type="password"
             id="passwordConfirm"
             name="passwordConfirm"
+            maxLength="20"
             value={formData.passwordConfirm}
             onChange={handleInputChange}
             className={passwordError ? 'error' : ''}
@@ -288,6 +321,7 @@ const Signup = () => {
             name="name"
             value={formData.name}
             onChange={handleInputChange}
+            maxLength="30"
             required
           />
         </div>
@@ -300,11 +334,11 @@ const Signup = () => {
           </label>
           <input
             type="tel"
-            maxLength="11"
             id="phonenumber"
             name="phonenumber"
             value={formData.phonenumber}
-            onChange={(e) => setFormData({...formData, phonenumber: e.target.value.replace(/[^0-9]/g, '')})}
+            onChange={handleInputChange}
+            maxLength="11"
             required
           />
         </div>

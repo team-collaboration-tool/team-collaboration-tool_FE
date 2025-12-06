@@ -62,7 +62,7 @@ const NavBar = () => {
 
       alert("프로젝트가 생성되었습니다. 프로젝트 설정 페이지로 이동합니다.");
 
-      navigate(`/project/${newProjectId}/setting`);
+      navigate(`/project/${newProjectId}/projectsetting`);
     } catch (error) {
       console.error("프로젝트 생성 중 오류: ", error);
       alert("프로젝트 생성에 실패했습니다.");
@@ -101,7 +101,7 @@ const NavBar = () => {
 
   const handleLogout = () => {
     sessionStorage.removeItem("token");
-    lsessionStorage.removeItem("user");
+    sessionStorage.removeItem("user");
     navigate("/");
   };
 
