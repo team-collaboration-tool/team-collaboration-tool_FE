@@ -34,7 +34,7 @@ const PageNavBar = ({ leftContentState }) => {
 
   const fetchProjects = useCallback(async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       const response = await fetch(`${API_URL}/api/projects/me`, {
         method: "GET",
