@@ -61,6 +61,8 @@ const NavBar = () => {
       const data = await response.json();
       const newProjectId = data.projectPk;
 
+      alert("프로젝트가 생성되었습니다. 프로젝트 설정 페이지로 이동합니다.")
+
       navigate(`/project/${newProjectId}/setting`);
     } catch (error) {
       console.error("프로젝트 생성 중 오류: ", error);
@@ -84,17 +86,13 @@ const NavBar = () => {
       });
 
       if (!response.ok) {
-        throw new Error("프로젝트 참여 실패");
+        const errorData = await response.json();
+        throw new Error(errorData.message || "프로젝트 참여 요청 실패");
       }
-
-      const data = await response.json();
-      const projectId = data.projectId;
-
-      navigate(`/project/${projectId}`);
+      alert("프로젝트 참여 요청이 전송되었습니다. 방장의 승인 후 참여됩니다.");
       setProjectCode("");
     } catch (error) {
-      console.error("프로젝트 참여 중 오류:", error);
-      alert("프로젝트 참여에 실패했습니다.");
+      alert(error.message || "존재하지 않는 프로젝트 코드입니다.");
     }
   };
 
