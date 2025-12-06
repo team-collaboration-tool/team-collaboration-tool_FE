@@ -176,6 +176,23 @@ const Setting = () => {
       setIsEditing(false);
       setPasswordForm({ current: "", new: "", confirm: "" });
       await fetchUserInfo();
+      
+      // sessionStorage의 사용자 정보 업데이트
+      const storedUser = sessionStorage.getItem("user");
+      if (storedUser) {
+        try {
+          const userObj = JSON.parse(storedUser);
+          userObj.name = userInfo.name;
+          userObj.phone = userInfo.phone;
+          userObj.field = userInfo.major;
+          sessionStorage.setItem("user", JSON.stringify(userObj));
+          
+          // TopNavBar 업데이트를 위한 커스텀 이벤트 발생
+          window.dispatchEvent(new Event("userInfoUpdated"));
+        } catch (e) {
+          console.error("sessionStorage 업데이트 실패:", e);
+        }
+      }
     } catch (error) {
       console.error(error);
       alert("정보 저장 중 오류가 발생했습니다.");
