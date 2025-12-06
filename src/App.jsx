@@ -1,99 +1,194 @@
-import React from "react";
-import {
-  Routes,
-  Route,
-  BrowserRouter,
-  Navigate,
-  Outlet,
-} from "react-router-dom";
+// BottomNavBar.jsx
+import React, { useCallback, useEffect, useState } from "react";
+import "./NavBar.css";
+import { Link, useLocation, useParams } from "react-router-dom";
+import dashboardIcon from "../../asset/Icon/dashboardIcon.svg";
+import calendarIcon from "../../asset/Icon/calendarIcon.svg";
+import communityIcon from "../../asset/Icon/communityIcon.svg";
+import scheduleIcon from "../../asset/Icon/scheduleIcon.svg";
+import settingIcon1 from "../../asset/Icon/settingIcon-01.svg";
 
-// pages/auth
-import Login from "./pages/auth/Login";
-import SignUp from "./pages/auth/Signup";
+const API_URL = import.meta.env.VITE_DEV_PROXY_URL;
 
-// pages/dashboard
-import Dashboard from "./pages/main/Dashboard";
-import Setting from "./pages/main/Setting";
+const PageNavBar = ({ leftContentState }) => {
+  const { projectID } = useParams();
+  const location = useLocation();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-// layout
-import Layout from "./Layout";
+  const currentProjectIdFromURL = projectID ? parseInt(projectID, 10) : null;
 
-// pages/projects/project
-import ProjectSetting from "./pages/projects/project/ProjectSetting";
+  const isCalendarViewActive =
+    leftContentState === "SCHEDULE_LIST" ||
+    leftContentState === "SCHEDULE_VIEW";
 
-// pages/projects/calendar
-import Calendar from "./pages/projects/calendar/Calendar";
+  const isBaseProjectRoute =
+    projectID && location.pathname === `/project/${projectID}`;
 
-// pages/projects/board
-import Board from "./pages/projects/board/Board";
+  const isProjectListDisabled = isBaseProjectRoute && !isCalendarViewActive;
 
-// pages/projects/schedule
-import Schedule from "./pages/projects/schedule/Schedule";
+  const fetchProjects = useCallback(async () => {
+    try {
+      const token = localStorage.getItem("token");
 
-// pages/NotFound
-import NotFound from "./pages/NotFound";
+      const response = await fetch(`${API_URL}/api/projects/me`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-// css
-import "./App.css";
+      if (response.ok) {
+        const data = await response.json();
+        setProjects(data);
+      } else {
+        const errorText = await response.text();
+        console.error(
+          "HTTP Status:",
+          response.status,
+          "Error Body:",
+          errorText
+        );
+        setError(`프로젝트 로드 실패 (HTTP ${response.status})`);
+      }
+      setLoading(false);
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
+  }, []);
 
-const PrivateRoute = () => {
-  const isLogin = !!localStorage.getItem("token");
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
 
-  if (!isLogin) {
-    alert("로그인 후 이용해주시길 바랍니다.");
-    return <Navigate to="/" replace />;
-  }
-  return <Outlet />;
-};
+  const pages = [
+    {
+      id: 1,
+      name: "마이페이지",
+      src: dashboardIcon,
+      to: `/dashboard`,
+    },
+    {
+      id: 2,
+      name: "게시판",
+      src: communityIcon,
+      to: `/project/${projectID}/board`,
+    },
+    {
+      id: 3,
+      name: "달력",
+      src: calendarIcon,
+      to: `/project/${projectID}`,
+    },
+    {
+      id: 4,
+      name: "시간조율",
+      src: scheduleIcon,
+      to: `/project/${projectID}/schedule`,
+    },
+    {
+      id: 5,
+      name: "프로젝트 관리",
+      src: settingIcon1,
+      to: `/project/${projectID}/setting`,
+    },
+  ];
 
-const PublicRoute = () => {
-  const isLogin = !!localStorage.getItem("token");
-  return isLogin ? <Navigate to="/dashboard" replace /> : <Outlet />;
-};
+  const pageMap = pages.map((page) => (
+    <div key={page.id} className="Function-item">
+      <Link to={page.to} className="FunctionButton">
+        <img
+          src={page.src}
+          alt={`${page.name} icon`}
+          className="FunctionIcon"
+        />
+        <h1 className="FunctionText">{page.name}</h1>
+      </Link>
+    </div>
+  ));
 
-const App = () => {
+  const toggleModal = () => {
+    if (isProjectListDisabled) {
+      return;
+    }
+    setIsModalOpen(!isModalOpen);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const projectList = projects.map((project) => {
+    const isCurrentProject = project.projectPk === currentProjectIdFromURL;
+
+    return (
+      <div
+        key={project.projectPk}
+        className={`Project-item ${isCurrentProject ? "selected" : ""}`}
+      >
+        <Link
+          to={`/project/${project.projectPk}`}
+          className={`ProjectButton ${isCurrentProject ? "active" : ""}`}
+          onClick={closeModal}
+        >
+          <div className="projectSelect"></div>
+          <div className="ProjectText">{project.projectName}</div>
+        </Link>
+      </div>
+    );
+  });
+
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route element={<PublicRoute />}>
-          {/* 인증 관련 라우트 */}
-          <Route path="/" element={<Login />} />
-          <Route path="/sign/1" element={<SignUp />} />
-        </Route>
-
-        <Route element={<PrivateRoute />}>
-          {/* 메인 대시보드 */}
-          <Route element={<Layout showPageNav={false} />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/setting" element={<Setting />} />
-          </Route>
-
-          {/* 프로젝트 라우트 */}
-          <Route
-            path="/project/:projectID"
-            element={<Layout showPageNav={true} />}
+    <>
+      <div className="NavBar-bottom">
+        <div className="bottom">
+          <div
+            className="ProjectName"
+            onClick={toggleModal}
+            style={{
+              cursor: isProjectListDisabled ? "default" : "pointer",
+              opacity: isProjectListDisabled ? 0.6 : 1,
+            }}
           >
-            <Route index element={<Calendar />} />
-            <Route path="setting" element={<ProjectSetting />} />
-            <Route path="calendar" element={<Calendar />} />
+            프로젝트 목록
+          </div>
+          <div className="button">
+            <div className="Pages">{pageMap}</div>
+          </div>
+        </div>
+      </div>
 
-            {/* 게시판 라우트 */}
-            <Route path="board">
-              <Route index element={<Board />} />
-            </Route>
+      {isModalOpen && (
+        <>
+          <div className="modalOverlay" onClick={closeModal}></div>
 
-            {/* 일정 조율 라우트 */}
-            <Route path="schedule">
-              <Route index element={<Schedule />} />
-            </Route>
-          </Route>
-        </Route>
-
-        {/* 404 Not Found 라우트 */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </BrowserRouter>
+          <div className="projectModal">
+            <div className="ProjectListContainer">
+              <h2 className="projectTitle">프로젝트</h2>
+              <div className="projectList">
+                {loading ? (
+                  <p className="loadingText">로딩 중...</p>
+                ) : error ? (
+                  <p className="errorText">에러: {error}</p>
+                ) : projects.length > 0 ? (
+                  projectList
+                ) : (
+                  <p className="noProjects">프로젝트가 없습니다.</p>
+                )}
+              </div>
+            </div>
+            <div className="modalCloseBtn" onClick={closeModal}>
+              프로젝트 목록
+            </div>
+          </div>
+        </>
+      )}
+    </>
   );
 };
 
-export default App;
+export default PageNavBar;
