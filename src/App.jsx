@@ -35,6 +35,21 @@ import NotFound from "./pages/NotFound";
 // css
 import "./App.css";
 
+const PrivateRoute = () => {
+  const isLogin = !!sessionStorage.getItem("token");
+
+  if (!isLogin) {
+    alert("로그인 후 이용해주시길 바랍니다.");
+    return <Navigate to="/" replace />;
+  }
+  return <Outlet />;
+};
+
+const PublicRoute = () => {
+  const isLogin = !!sessionStorage.getItem("token");
+  return isLogin ? <Navigate to="/dashboard" replace /> : <Outlet />;
+};
+
 const App = () => {
   return (
     <BrowserRouter>

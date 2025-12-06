@@ -42,7 +42,7 @@ const Setting = () => {
     const response = await fetch(`${API_URL}/api/users/me`, {
       method: "GET",
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        Authorization: `Bearer ${sessionStorage.getItem("token")}`,
       },
     });
     
@@ -112,7 +112,7 @@ const Setting = () => {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${sessionStorage.getItem("token")}`,
           },
           body: JSON.stringify({
             name: userInfo.name,
@@ -133,7 +133,7 @@ const Setting = () => {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${sessionStorage.getItem("token")}`,
           },
           body: JSON.stringify({
             currentPassword: passwordForm.current,
@@ -176,7 +176,7 @@ const Setting = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${sessionStorage.getItem("token")}`,
         },
         body: JSON.stringify({ password }),
       });
@@ -190,13 +190,13 @@ const Setting = () => {
       const deleteResponse = await fetch(`${API_URL}/api/users/delete`, {
         method: "DELETE",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${sessionStorage.getItem("token")}`,
         },
       });
 
       if (deleteResponse.ok) {
         alert("회원탈퇴가 완료되었습니다.");
-        localStorage.removeItem("token");
+        sessionStorage.removeItem("token");
         setOpenWithdrawModal(false);
         navigate("/");
       } else {

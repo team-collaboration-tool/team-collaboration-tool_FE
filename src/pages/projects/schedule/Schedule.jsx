@@ -97,7 +97,7 @@ export default function TimeSchedulerPage() {
 
   // GET : /api/users/me == 내 이메일 얻기
   const getMyUserInfo = React.useCallback(() => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
 
     fetch(`${baseURL}/api/users/me`, {
       method: "GET",
@@ -131,7 +131,7 @@ export default function TimeSchedulerPage() {
 
   // GET : /api/projects/{projectId} == 프로젝트 멤버들 userPK 찾기
   const getMyUserPkFromProject = React.useCallback((projectId, myEmail) => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     fetch(`${baseURL}/api/projects/${projectId}`, {
       method: "GET",
       headers: {
@@ -172,7 +172,7 @@ export default function TimeSchedulerPage() {
   // =============================================================================
   // GET : /api/time-poll/list/{projectId} == 시간조율표 목록 조회
   const fetchPollList = React.useCallback(() => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     const projectId = ProjectPK;
 
     if (!projectId) return;
@@ -487,7 +487,7 @@ export default function TimeSchedulerPage() {
     console.log("POST : /api/time-poll 보내는 내용 = ", payload);
 
     // 로그인 토큰
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
 
     // baseURL 사용
     fetch(`${baseURL}/api/time-poll`, {
@@ -758,7 +758,7 @@ export default function TimeSchedulerPage() {
           };
 
           console.log("POST : /api/time-poll/submit 보내는 내용 == ", payload);
-          const token = localStorage.getItem("token");
+          const token = sessionStorage.getItem("token");
 
           fetch(`${baseURL}/api/time-poll/submit`, {
             method: "POST",
@@ -1004,7 +1004,7 @@ export default function TimeSchedulerPage() {
       fillUpDay(when_dateStart, cols);
 
       // 처음 그릴 때, 미리 그려진 정보 GET
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       console.log(`초기 데이터 로딩 시작: /api/time-poll/${pollId}`);
 
       // GET : /api/time-poll/{pollId} == 초기 시간조율표 로딩
