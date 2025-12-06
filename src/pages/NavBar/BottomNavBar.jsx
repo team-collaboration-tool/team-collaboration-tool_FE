@@ -56,7 +56,7 @@ const PageNavBar = ({ projectName }) => {
       id: 5,
       name: "프로젝트 관리",
       src: settingIcon1,
-      to: `/project/${projectID}/setting`,
+      to: `/project/${projectID}/projectsetting`,
     },
   ];
 
