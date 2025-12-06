@@ -933,12 +933,17 @@
 }
 
 .ProjectName:hover {
-  background-color: not-allowed;
+  background-color: #2b8bc7;
+  cursor: pointer;
+}
+
+.ProjectName.disabled {
+  background-color: #adb5bd;
   cursor: not-allowed;
 }
 
 .ProjectName.disabled:hover {
-  background-color: #2b8bc7;
+  background-color: #adb5bd;
 }
 
 .modalOverlay {

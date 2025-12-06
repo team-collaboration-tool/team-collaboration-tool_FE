@@ -1,18 +1,48 @@
 // TopNavBar.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./NavBar.css";
 import { Link, useNavigate } from "react-router-dom";
 import logoutIcon from "../../asset/Icon/logoutIcon.svg";
 import settingIcon from "../../asset/Icon/settingIcon.svg";
 import logo from "../../asset/HYUPMIN_logo.svg";
 
+const API_URL = import.meta.env.VITE_DEV_PROXY_URL;
+
 const NavBar = () => {
   const navigate = useNavigate();
+  const token = sessionStorage.getItem("token");
   const [projectCode, setProjectCode] = useState("");
+  const [userName, setUserName] = useState("");
+  const [fullName, setFullName] = useState("");
+
+  useEffect(() => {
+    const loadUserFromStorage = () => {
+      const stored = sessionStorage.getItem("user");
+
+      if (!stored) {
+        setFullName("");
+        setUserName("");
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(stored);
+        const name = parsed && parsed.name ? parsed.name : "";
+        setFullName(name);
+        setUserName(name ? name.charAt(0) : "");
+      } catch (storageError) {
+        console.error("저장된 사용자 정보 파싱 실패:", storageError);
+        setFullName("");
+        setUserName("");
+      }
+    };
+
+    loadUserFromStorage();
+  }, []);
 
   const handleCreateProject = async () => {
     try {
-      const response = await fetch("/api/projects", {
+      const response = await fetch(`${API_URL}/api/projects`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -28,9 +58,11 @@ const NavBar = () => {
       }
 
       const data = await response.json();
-      const newProjectId = data.projectId;
+      const newProjectId = data.projectPk;
 
-      navigate(`/project/${newProjectId}/setting`);
+      alert("프로젝트가 생성되었습니다. 프로젝트 설정 페이지로 이동합니다.");
+
+      navigate(`/project/${newProjectId}/projectsetting`);
     } catch (error) {
       console.error("프로젝트 생성 중 오류: ", error);
       alert("프로젝트 생성에 실패했습니다.");
@@ -44,33 +76,33 @@ const NavBar = () => {
     }
 
     try {
-      const response = await fetch(`/api/projects/join-request`, {
+      const response = await fetch(`${API_URL}/api/projects/join-request?code=${projectCode}`, {
         method: "POST",
         headers: {
-          "Content-Type": "applicatoin/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          projectCode: projectCode,
-        }),
       });
 
       if (!response.ok) {
-        throw new Error("프로젝트 참여 실패");
+        const errorData = await response.json();
+        throw new Error(errorData.message || "프로젝트 참여 요청 실패");
       }
-
-      const data = await response.json();
-      const projectId = data.projectId;
-
-      navigate(`/project/${projectId}`);
+      alert("프로젝트 참여 요청이 전송되었습니다. 방장의 승인 후 참여됩니다.");
       setProjectCode("");
     } catch (error) {
-      console.error("프로젝트 참여 중 오류:", error);
-      alert("프로젝트 참여에 실패했습니다.");
+      alert(error.message || "존재하지 않는 프로젝트 코드입니다.");
     }
   };
 
   const handleSetting = () => {
     navigate("/setting");
+  };
+
+  const handleLogout = () => {
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
+    navigate("/");
   };
 
   return (
@@ -87,7 +119,7 @@ const NavBar = () => {
             <input
               type="text"
               className="SearchBar"
-              placeholder="참여하고 싶은 프로젝트 코드를 입력해주세요"
+              placeholder="참여하고 싶은 프로젝트 코드를 입력 후 <enter>를 입력해주세요"
               value={projectCode}
               onChange={(e) => setProjectCode(e.target.value)}
               onKeyDown={(e) => {
@@ -101,11 +133,11 @@ const NavBar = () => {
             </button>
           </div>
           <div className="profile" to="/profile">
-            <div className="UserName">홍</div>
-            <div className="fullname">홍길동</div>
+            <div className="UserName">{userName || "사"}</div>
+            <div className="fullname">{fullName || "사용자"}</div>
           </div>
           <div className="Buttons">
-            <div className="LogoutButton">
+            <div className="LogoutButton" onClick={handleLogout}>
               <img src={logoutIcon} className="LogoutIcon" alt="logout" />
             </div>
             <div className="SettingButton" onClick={handleSetting}>

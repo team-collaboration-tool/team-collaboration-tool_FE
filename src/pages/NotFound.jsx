@@ -1,7 +1,7 @@
 import React from "react";
 import "./NotFound.css";
 import { useNavigate } from "react-router-dom";
-import logo from "../asset/404_Error_Logo.svg";
+import logo from "../asset/NOTFOUND_logo.svg";
 
 const NotFound = () => {
   const navigate = useNavigate();
@@ -16,12 +16,12 @@ const NotFound = () => {
 
   return (
     <div className="not-found-container">
+      <div className="error-title">404 Not Found</div>
       <div className="title">
         <img src={logo} alt="404 Error Logo" className="Error-logo" />
-        <h2>Page Not Found</h2>
+        <h2>이런! 찾을 수 없는 페이지에요...</h2>
       </div>
       <div className="message">
-        <p>찾을 수 없는 페이지입니다.</p>
         <p>요청하신 페이지가 사라졌거나, 잘못된 경로를 이용하셨습니다.</p>
       </div>
       <div className="buttons">

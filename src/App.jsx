@@ -37,7 +37,7 @@ import NotFound from "./pages/NotFound";
 import "./App.css";
 
 const PrivateRoute = () => {
-  const isLogin = !!localStorage.getItem("token");
+  const isLogin = !!sessionStorage.getItem("token");
 
   if (!isLogin) {
     alert("로그인 후 이용해주시길 바랍니다.");
@@ -47,7 +47,7 @@ const PrivateRoute = () => {
 };
 
 const PublicRoute = () => {
-  const isLogin = !!localStorage.getItem("token");
+  const isLogin = !!sessionStorage.getItem("token");
   return isLogin ? <Navigate to="/dashboard" replace /> : <Outlet />;
 };
 
@@ -74,7 +74,7 @@ const App = () => {
             element={<Layout showPageNav={true} />}
           >
             <Route index element={<Calendar />} />
-            <Route path="setting" element={<ProjectSetting />} />
+            <Route path="projectsetting" element={<ProjectSetting />} />
             <Route path="calendar" element={<Calendar />} />
 
             {/* 게시판 라우트 */}
