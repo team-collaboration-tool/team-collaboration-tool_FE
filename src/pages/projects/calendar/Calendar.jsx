@@ -40,7 +40,7 @@ const Calendar = () => {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
         const response = await fetch(`${API_URL}/api/users/me`, {
           method: "GET",
           headers: {
@@ -201,33 +201,36 @@ const Calendar = () => {
           }
         }
 
-        // createUserId + participants.userPk 기반 필터링
-        const mySchedules = finalSchedules.filter((schedule) => {
-          // createUserName으로 확인 (임시)
-          const isCreatorByName = schedule.createUserName === myUserInfo.name;
+        let schedulesToDisplay = finalSchedules;
 
-          // myUserPk가 있으면 participants에서 확인
-          const isParticipant =
-            myUserPk &&
-            Array.isArray(schedule.participants) &&
-            schedule.participants.some(
-              (participant) => Number(participant.userPk) === Number(myUserPk)
-            );
+        if (isDashboard) {
+          schedulesToDisplay = finalSchedules.filter((schedule) => {
+            // createUserName으로 확인 (임시)
+            const isCreatorByName = schedule.createUserName === myUserInfo.name;
 
-          // email로 participants 확인 (보조)
-          const isParticipantByEmail =
-            Array.isArray(schedule.participants) &&
-            schedule.participants.some(
-              (participant) => participant.email === myUserInfo.email
-            );
+            // myUserPk가 있으면 participants에서 확인
+            const isParticipant =
+              myUserPk &&
+              Array.isArray(schedule.participants) &&
+              schedule.participants.some(
+                (participant) => Number(participant.userPk) === Number(myUserPk)
+              );
 
-          const result =
-            isCreatorByName || isParticipant || isParticipantByEmail;
+            // email로 participants 확인 (보조)
+            const isParticipantByEmail =
+              Array.isArray(schedule.participants) &&
+              schedule.participants.some(
+                (participant) => participant.email === myUserInfo.email
+              );
 
-          return result;
-        });
+            const result =
+              isCreatorByName || isParticipant || isParticipantByEmail;
 
-        setAllSchedules(mySchedules);
+            return result;
+          });
+        }
+
+        setAllSchedules(schedulesToDisplay);
       }
     } catch (err) {
       setScheduleError(err.message);
