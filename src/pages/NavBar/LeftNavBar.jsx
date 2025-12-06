@@ -1117,31 +1117,6 @@ const LeftNavBar = ({ isCalendarPage, onContentChange }) => {
         // 2단계: 사용자 필터링
         let finalSchedules = dateFilteredSchedules;
 
-        if (myUserPk) {
-          finalSchedules = dateFilteredSchedules.filter((schedule) => {
-            const isCreator =
-              Number(schedule.createUserId) === Number(myUserPk);
-            const isParticipant =
-              Array.isArray(schedule.participants) &&
-              schedule.participants.some(
-                (participant) => Number(participant.userPk) === Number(myUserPk)
-              );
-
-            return isCreator || isParticipant;
-          });
-        } else if (myUserInfo?.email) {
-          // myUserPk가 없으면 email로 필터링
-          finalSchedules = dateFilteredSchedules.filter((schedule) => {
-            const isParticipantByEmail =
-              Array.isArray(schedule.participants) &&
-              schedule.participants.some(
-                (participant) => participant.email === myUserInfo.email
-              );
-
-            return isParticipantByEmail;
-          });
-        }
-
         setSchedules(finalSchedules);
       } else {
         const errorText = await response.text();
