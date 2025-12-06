@@ -1,0 +1,350 @@
+/* Signup */
+.signup-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #FFFFFF;
+}
+
+.signup-step {
+  position: relative;
+  width: 400px;
+  height: 670px;
+  padding: 40px 32px;
+  background: #FFFFFF;
+  border: 1px solid #E0E0E0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 로고 */
+.logo-area {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+.logo-area h1 {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.logo-circle {
+  width: 120px;
+  height: 120px;
+  border: 2px solid #e0e0e0;
+  border-radius: 50%;
+  background: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.logo-circle img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+}
+
+/* 입력칸 */
+.signup-form {
+  width: 100%;
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.signup-form label {
+  display: flex;
+  align-items: center;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.signup-form label .highlight {
+  color: #f00;
+  margin-left: 2px;
+}
+
+.label-with-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.label-text {
+  display: flex;
+  align-items: center;
+}
+
+.signup-form input,
+.signup-form select {
+  width: 100%;
+  height: 48px;
+  padding: 0 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: #000;
+  background-color: #fff;
+  box-sizing: border-box;
+  text-align: left;
+  outline: none;
+  transition: border 0.2s;
+}
+
+.signup-form input:focus,
+.signup-form select:focus {
+  border-color: #4a9fd8;
+}
+
+.signup-form select {
+  cursor: pointer;
+}
+
+/* 비밀번호 서로 맞지 않을 때 */
+.signup-form input.error {
+  border-color: #ef4444;
+  background-color: #fef2f2;
+}
+
+.signup-form input.error:focus {
+  border-color: #ef4444;
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  color: #ef4444;
+  white-space: nowrap;
+}
+
+
+.error-message .caution-icon {
+  width: 14px;
+  height: 14px;
+}
+
+/* 필수 항목 안내 */
+.required-text {
+  width: 100%;
+  margin: 0 0 16px 0;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  color: #ef4444;
+  text-align: right;
+}
+
+/* 이메일 중복 확인 */
+.input-with-button {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  position: relative;
+}
+
+.input-with-button input {
+  flex: 1;
+}
+
+.check-duplicate-btn {
+  height: 36px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 6px;
+  background: #e0e0e0;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 11px;
+  color: #333;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.check-duplicate-btn:hover {
+  background: #d0d0d0;
+}
+
+.check-duplicate-btn.available {
+  background: #22c55e;
+  color: #fff;
+}
+
+.check-duplicate-btn.duplicate {
+  background: #ef4444;
+  color: #fff;
+}
+
+/* 개인정보 수집 동의 */
+.terms-checkbox {
+  width: 95%;
+  height: 50px;
+  margin: 10px 0 20px;
+  padding: 12px;
+  background: #f5f5f5;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+}
+
+.terms-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-right: 10px;
+  accent-color: blue;
+  cursor: pointer;
+}
+
+.terms-checkbox label {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  color: #666;
+  text-align: left;
+  cursor: pointer;
+}
+
+.terms-checkbox label .highlight {
+  color: #f00;
+  margin-left: 1px;
+}
+
+/* 다음 버튼*/
+.next-btn {
+  width: auto;
+  min-width: 100px;
+  height: 44px;
+  padding: 0 20px;
+  border: none;
+  border-radius: 6px;
+  background: #e8e8e8;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  color: #4a9fd8;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  align-self: flex-end;
+  gap: 8px;
+}
+
+.next-btn:hover:not(:disabled) {
+  background: #d8d8d8;
+}
+
+.next-btn:disabled {
+  background: #f5f5f5;
+  color: #ccc;
+}
+
+.next-btn .next-icon {
+  width: 16px;
+  height: 16px;
+  filter: brightness(0) saturate(100%) invert(59%) sepia(43%) saturate(1234%) 
+          hue-rotate(169deg) brightness(92%) contrast(89%);
+}
+
+.next-btn:disabled .next-icon {
+  filter: brightness(0) saturate(100%) invert(80%) sepia(0%) saturate(0%) 
+          hue-rotate(0deg) brightness(100%) contrast(88%);
+}
+
+/* 회원가입 버튼 */
+.signup-btn {
+  width: 100%;
+  height: 50px;
+  margin-top: 10px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: #33A1E0;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.signup-btn:hover:not(:disabled) {
+  background: #3d8bc2;
+}
+
+.signup-btn:disabled {
+  background: #f5f5f5;
+  color: #ccc;
+}
+
+/* 회원가입 완료 */
+.signup-complete-step {
+  position: relative;
+  width: 400px;
+  height: 670px;
+  padding: 60px 32px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.signup-complete-title {
+  margin: 0 0 20px;
+  margin-top: 80px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 24px;
+  color: #333;
+}
+
+.signup-complete-img {
+  width: 280px;
+  height: auto;
+  margin: 20px 0;
+}
+
+.signup-complete-subtitle {
+  margin: 20px 0 40px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 18px;
+  color: #666;
+}
+
+.start-login-btn {
+  width: 80%;
+  height: 48px;
+  border: none;
+  border-radius: 6px;
+  background: #4a9fd8;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.start-login-btn:hover {
+  background: #3d8bc2;
+}

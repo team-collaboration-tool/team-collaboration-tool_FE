@@ -1,0 +1,387 @@
+.setting-container {
+  width: 100%;
+  min-height: 100vh;
+  max-height: 100vh;
+  background: #ffffff;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.setting-content {
+  width: 100%;
+  max-width: 1000px;
+  padding: 40px 40px 60px;
+  box-sizing: border-box;
+}
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  margin-bottom: 30px;
+  background: transparent;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: absolute;
+  top: 20px;
+  left: 20px;
+}
+
+.back-button:hover {
+  background: #f5f5f5;
+  border-color: #bdbdbd;
+}
+
+.setting-container .input-with-icon {
+  position: relative;
+  width: 100%;
+}
+
+.setting-container .input-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+  background: #fff;
+}
+
+.setting-container .verify-input {
+  width: 100%;
+  padding: 15px 20px 15px 48px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  color: #333;
+  outline: none;
+  box-sizing: border-box;
+  transition: border 0.2s;
+}
+
+.setting-container .verify-input:focus {
+  border-color: #4a9fd8;
+}
+
+.verify-btn {
+  width: 120px;
+  padding: 12px;
+  background: #4a9fd8;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.verify-btn:hover {
+  background: #3d8bc2;
+}
+
+/* 프로필 */
+.profile-box {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 60px;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
+/* 프로필 사진 */
+.profile-avatar {
+  width: 180px;
+  height: 180px;
+  background: #5b8fd8;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Inter', sans-serif;
+  font-size: 72px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.profile-columns {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 40px;
+}
+
+.profile-column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.profile-field {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 16px;
+  align-items: center;
+}
+
+.profile-field label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.profile-field .field-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.profile-field input,
+.profile-field select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  color: #333;
+  background: #ffffff;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.profile-field input:focus:not(:disabled),
+.profile-field select:focus:not(:disabled) {
+  border-color: #e0e0e0;
+  box-shadow: none;
+}
+
+.profile-field input:disabled,
+.profile-field select:disabled {
+  background: #ffffff;
+  color: #333;
+  border-color: #e0e0e0;
+  cursor: default;
+  opacity: 1;
+}
+
+.profile-field input.password-mask {
+  letter-spacing: 2px;
+  background: #ffffff;
+}
+
+.password-input-wrapper {
+  position: relative;
+}
+
+/* 하단 버튼 */
+.profile-actions {
+  margin-top: 50px;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+/* 취소 버튼 */
+.btn-cancel {
+  min-width: 140px;
+  height: 50px;
+  padding: 0 32px;
+  border-radius: 28px;
+  border: none;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  background: #bdbdbd;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-cancel:hover {
+  background: #a5a5a5;
+}
+
+/* 수정하기 버튼 */
+.btn-edit {
+  min-width: 140px;
+  height: 50px;
+  padding: 0 32px;
+  border-radius: 28px;
+  border: none;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  background: #bdbdbd;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-edit:hover {
+  background: #a5a5a5;
+}
+
+/* 저장하기 */
+.btn-confirm {
+  min-width: 140px;
+  height: 50px;
+  padding: 0 32px;
+  border-radius: 28px;
+  border: none;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  background: #33A1E0;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-confirm:hover {
+  background: #3d8bc2;
+}
+
+/* 회원 탈퇴 */
+.withdrawal-btn {
+  min-width: 140px;
+  height: 50px;
+  padding: 0 32px;
+  border-radius: 28px;
+  border: none;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  background: #ef4444;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.withdrawal-btn:hover {
+  background: #dc2626;
+}
+
+/* 비밀번호 변경 */
+.password-change-box {
+  width: 600px;
+  padding: 50px 40px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.password-change-title {
+  margin: 0 0 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: #333;
+  text-align: center;
+}
+
+.password-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.password-field label {
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+}
+
+.password-change-box .input-with-icon {
+  position: relative;
+}
+
+.password-change-box .input-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+  background: #999;
+}
+
+.password-field input {
+  width: 100%;
+  padding: 14px 18px 14px 48px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  color: #333;
+  outline: none;
+  box-sizing: border-box;
+  transition: border 0.2s;
+}
+
+.password-field input:focus {
+  border-color: #4a9fd8;
+}
+
+.password-change-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.password-change-buttons button {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.password-change-buttons .btn-cancel {
+  background: #e0e0e0;
+  color: #666;
+}
+
+.password-change-buttons .btn-cancel:hover {
+  background: #d0d0d0;
+}
+
+.password-change-buttons .btn-confirm {
+  background: #4a9fd8;
+  color: #fff;
+}
+
+.password-change-buttons .btn-confirm:hover {
+  background: #3d8bc2;
+}
