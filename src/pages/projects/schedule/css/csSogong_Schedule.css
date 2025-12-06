@@ -1,5 +1,5 @@
 /* 기본 배치 및 애니메이션 */
-/* * {
+* {
     margin: 0;
     padding: 0;
     border: 0;
@@ -27,7 +27,7 @@ body {
 #root {
     position: relative;
     min-height: 100vh;
-} */
+}
 
 /* header {
     position: fixed;
@@ -84,26 +84,25 @@ body {
 
 
 
-
-/* 시간조율표 만들기 */
+/* ========================================================================= */
+/* 0번: 시간조율표 만들기 */
 .TimeSelect_make {
     display: block;
-
     position: absolute;
     transform: translate(-50%, 0);
     left: 50%;
-    top: 5px;
+    top: 10px;
+    bottom: 10px;
     width: 1600px;
-    height: 800px;
-    background-color: rgba(255, 255, 255);
+    height: auto; 
+
+    background-color: #FAFAFA;
     border: 2px solid rgb(0, 0, 0);
     border-radius: 15px;
-    align-items: center;
-    justify-content: center;
     z-index: 5;
-
-    margin: 2rem auto;
     padding: 2rem;
+    padding-top: 100px;
+    overflow-y: auto; 
 }
 .TimeSelect_make.off {
     display: none;
@@ -159,13 +158,13 @@ body {
 .TimeSelect_make_item select {
     width: 100%;
     padding: 10px;
-    border: 1px solid rgb(255, 255, 255);
-    background-color: rgb(0, 0, 0);
-    color: rgb(255, 255, 255);
+    border: 1px solid rgb(0, 0, 0);
+    background-color: rgb(255, 255, 255);
+    color: rgb(0, 0, 0);
     border-radius: 8px;
     transition: all 0.2s;
     box-sizing: border-box;
-    filter: invert(1);
+    /* filter: invert(1); */
 }
 
 .TimeSelect_make_item input[type="date"]:focus,
@@ -200,6 +199,10 @@ body {
     height: 80%;
     border: 1.5px solid rgb(0, 0, 0);
     border-radius: 0.5rem;
+
+    /* 스크롤 활성화 */
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .TimeSelect_item {
@@ -222,20 +225,27 @@ body {
 }
 
 
+
+/* ========================================================================= */
 /* 1번: 시간조율 */
 .TimeSelect {
     display: none;
-
     position: absolute;
     transform: translate(-50%, 0);
     left: 50%;
-    top: 125px;
+    top: 10px;
+    bottom: 10px;
     width: 1600px;
-    height: 800px;
+    height: auto;
+    
     border: 2px solid rgb(0, 0, 0);
     border-radius: 20px;
     background-color: rgb(255, 255, 255);
     z-index: 2;
+
+    /* 스크롤 활성화 */
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .TimeSelect.on {
@@ -496,6 +506,7 @@ body {
 }
 
 #between_GridLine {
+    display: none;
     position: absolute;
     transform: translate(-50%, -50%);
     left: 50%;

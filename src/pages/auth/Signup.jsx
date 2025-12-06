@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
 import "./Signup.css";
 
@@ -7,18 +7,18 @@ import completeSignupImg from "../../asset/user_icon/welcome.svg";
 import next from "../../asset/user_icon/next_icon.svg";
 import caution from "../../asset/user_icon/caution_icon.svg";
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_DEV_PROXY_URL;
 
 // 전공/직무
 const MAJOR_OPTIONS = [
   { value: "", label: "전공/직무를 선택하세요" },
-  { value: "IT", label: "소프트웨어 개발/IT엔지니어링" },
-  { value: "marketing", label: "마케팅/광고" },
-  { value: "operation", label: "기획/운영" },
-  { value: "consulting", label: "기술영업/컨설팅" },
-  { value: "research", label: "연구/교육" },
-  { value: "management", label: "경영/관리" },
-  { value: "other", label: "기타" },
+  { value: "소프트웨어 개발/IT엔지니어링", label: "소프트웨어 개발/IT엔지니어링" },
+  { value: "마케팅/광고", label: "마케팅/광고" },
+  { value: "기획/운영", label: "기획/운영" },
+  { value: "기술영업/컨설팅", label: "기술영업/컨설팅" },
+  { value: "연구/교육", label: "연구/교육" },
+  { value: "경영/관리", label: "경영/관리" },
+  { value: "기타", label: "기타" },
 ];
 
 const Signup = () => {
@@ -27,6 +27,7 @@ const Signup = () => {
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [emailCheckStatus, setEmailCheckStatus] = useState('');
   const [passwordError, setPasswordError] = useState(false);
+  const emailInputRef = useRef(null);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -36,18 +37,23 @@ const Signup = () => {
     major: "",
   });
 
-  // 입력값 변경 핸들러
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    let processedValue = value;
+    
+    if (name === 'phonenumber') {
+      processedValue = value.replace(/[^0-9]/g, '').slice(0, 11);
+    }
+    
+    setFormData(prev => ({ ...prev, [name]: processedValue }));
     
     if (name === 'email') {
       setEmailCheckStatus('');
     }
     
     if (name === 'password' || name === 'passwordConfirm') {
-      const newPassword = name === 'password' ? value : formData.password;
-      const newPasswordConfirm = name === 'passwordConfirm' ? value : formData.passwordConfirm;
+      const newPassword = name === 'password' ? processedValue : formData.password;
+      const newPasswordConfirm = name === 'passwordConfirm' ? processedValue : formData.passwordConfirm;
       setPasswordError(newPassword && newPasswordConfirm && newPassword !== newPasswordConfirm);
     }
   };
@@ -59,12 +65,61 @@ const Signup = () => {
       return;
     }
 
+    if (!/^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[a-zA-Z]+$/.test(formData.email)) {
+      alert("이메일 형식이 올바르지 않습니다.");
+      return;
+    }
+
     try {
-      // 중복 확인 API 호출하기
-      const isDuplicate = false;
-      
-      setEmailCheckStatus(isDuplicate ? 'duplicate' : 'available');
-      alert(isDuplicate ? "이미 사용 중인 이메일입니다." : "사용 가능한 이메일입니다.");
+      setEmailCheckStatus('');
+      const response = await fetch(
+        `${API_URL}/api/users/check-email?email=${encodeURIComponent(formData.email)}`,
+        {
+          method: "GET",
+          headers: {
+            "Accept": "application/json",
+          },
+        },
+      );
+
+      if (response.status === 409) {
+        setEmailCheckStatus('duplicate');
+        alert("이미 사용 중인 이메일입니다.");
+        return;
+      }
+
+      if (response.ok) {
+        const result = await response.json().catch(() => ({}));
+
+        const isDuplicate =
+          result?.available === false ||
+          result?.duplicate === true ||
+          result?.isDuplicate === true ||
+          result?.exists === true ||
+          result?.data?.duplicate === true ||
+          result?.data?.exists === true;
+
+        if (isDuplicate) {
+          setEmailCheckStatus('duplicate');
+          alert(result?.message || "이미 사용 중인 이메일입니다.");
+          return;
+        }
+
+        const isAvailable = result?.available === true;
+
+        if (isAvailable) {
+          setEmailCheckStatus('available');
+          alert(result?.message || "사용 가능한 이메일입니다.");
+          return;
+        }
+
+        alert(result?.message || "중복 확인 결과를 확인할 수 없습니다.");
+        return;
+      }
+
+      const errorData = await response.json().catch(() => ({}));
+      const message = errorData?.message || "중복 확인에 실패했습니다.";
+      alert(message);
     } catch (error) {
       console.error("중복 확인 오류:", error);
       alert("중복 확인 중 오류가 발생했습니다.");
@@ -73,20 +128,45 @@ const Signup = () => {
 
   // 다음 단계로 이동
   const handleNextStep = () => {
+    if (!/^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[a-zA-Z]+$/.test(formData.email)) {
+      alert("이메일 형식이 올바르지 않습니다.");
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9!@#$%^&*()\-_+=]{8,20}$/.test(formData.password)) {
+      alert("비밀번호는 8~20자의 영문 대소문자, 숫자, 특수문자(!@#$%^&*()-_+=)만 사용 가능합니다.");
+      return;
+    }
+
+    if (formData.password !== formData.passwordConfirm) {
+      alert("비밀번호가 일치하지 않습니다.");
+      return;
+    }
+
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
     }
   };
 
   const handleSignup = async () => {
+    if (!formData.name.trim()) {
+      alert("이름을 입력해주세요.");
+      return;
+    }
+
+    if (!/^\d{11}$/.test(formData.phonenumber)) {
+      alert("전화번호는 숫자 11자리를 입력해주세요.");
+      return;
+    }
+
     try {
-      const response = await fetch(`${API_URL}/users/signup`, {
+      const response = await fetch(`${API_URL}/api/users/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          passowrd: formData.password,
+          password: formData.password,
           name: formData.name,
           email: formData.email,
           phone: formData.phonenumber,
@@ -148,6 +228,8 @@ const Signup = () => {
               name="email"
               value={formData.email}
               onChange={handleInputChange}
+              ref={emailInputRef}
+              maxLength="30"
               required
             />
             <button 
@@ -170,6 +252,7 @@ const Signup = () => {
             type="password"
             id="password"
             name="password"
+            maxLength="20"
             value={formData.password}
             onChange={handleInputChange}
             className={passwordError ? 'error' : ''}
@@ -193,6 +276,7 @@ const Signup = () => {
             type="password"
             id="passwordConfirm"
             name="passwordConfirm"
+            maxLength="20"
             value={formData.passwordConfirm}
             onChange={handleInputChange}
             className={passwordError ? 'error' : ''}
@@ -237,6 +321,7 @@ const Signup = () => {
             name="name"
             value={formData.name}
             onChange={handleInputChange}
+            maxLength="30"
             required
           />
         </div>
@@ -249,11 +334,11 @@ const Signup = () => {
           </label>
           <input
             type="tel"
-            maxLength="11"
             id="phonenumber"
             name="phonenumber"
             value={formData.phonenumber}
-            onChange={(e) => setFormData({...formData, phonenumber: e.target.value.replace(/[^0-9]/g, '')})}
+            onChange={handleInputChange}
+            maxLength="11"
             required
           />
         </div>

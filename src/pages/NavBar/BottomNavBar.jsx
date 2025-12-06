@@ -19,6 +19,9 @@ const PageNavBar = ({ projectName, leftContentState }) => {
   const [error, setError] = useState(null);
 
   const isCalendarPage = location.pathname.endsWith("/calendar");
+  const isSettingPage = location.pathname.endsWith("/setting");
+  const isInvalidProject = !projectID || projectID === "undefined";
+  const isBasePath = location.pathname === `/project/${projectID}`;
 
   const currentProjectIdFromURL = projectID ? parseInt(projectID, 10) : null;
 
@@ -61,6 +64,9 @@ const PageNavBar = ({ projectName, leftContentState }) => {
   useEffect(() => {
     fetchProjects();
   }, [fetchProjects]);
+  if (isSettingPage) {
+    return null;
+  }
 
   const pages = [
     {
@@ -91,7 +97,7 @@ const PageNavBar = ({ projectName, leftContentState }) => {
       id: 5,
       name: "프로젝트 관리",
       src: settingIcon1,
-      to: `/project/${projectID}/setting`,
+      to: `/project/${projectID}/projectsetting`,
     },
   ];
 

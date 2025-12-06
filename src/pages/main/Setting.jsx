@@ -10,7 +10,7 @@ import Mail from "../../asset/user_icon/mail_icon.svg";
 import Lock from "../../asset/user_icon/key_icon_black.svg";
 import Work from "../../asset/user_icon/work_icon.svg";
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_DEV_PROXY_URL;
 
 const Setting = () => {
   const navigate = useNavigate();
@@ -22,6 +22,7 @@ const Setting = () => {
     email: "",
     major: "",
   });
+  const [initialUserInfo, setInitialUserInfo] = useState(null);
 
   // 전체 편집 모드
   const [isEditing, setIsEditing] = useState(false);
@@ -38,20 +39,23 @@ const Setting = () => {
 
   // 사용자 정보 불러오기
   const fetchUserInfo = async () => {
-    const response = await fetch(`${API_URL}/api/user/me`, {
+    const response = await fetch(`${API_URL}/api/users/me`, {
       method: "GET",
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        Authorization: `Bearer ${sessionStorage.getItem("token")}`,
       },
     });
+    
     if (response.ok) {
       const data = await response.json();
-      setUserInfo({
-        name: data.name,
-        phone: data.phone,
-        email: data.email,
-        major: data.field,
-      });
+      const normalizedInfo = {
+        name: data.name ?? "",
+        phone: data.phone ?? "",
+        email: data.email ?? "",
+        major: data.field ?? "",
+      };
+      setUserInfo(normalizedInfo);
+      setInitialUserInfo({ ...normalizedInfo });
     }
   };
 
@@ -69,49 +73,91 @@ const Setting = () => {
   const handleCancelEdit = () => {
     setIsEditing(false);
     setPasswordForm({ current: "", new: "", confirm: "" });
-    fetchUserInfo(); // 원래 정보로 되돌림
+    if (initialUserInfo) {
+      setUserInfo({ ...initialUserInfo });
+    } else {
+      fetchUserInfo();
+    }
   };
 
   // 프로필 필드 값 변경
   const handleUserInfoChange = (field, value) => {
-    setUserInfo({ ...userInfo, [field]: value });
+    if (field === 'phone') {
+      const digits = value.replace(/[^0-9]/g, '').slice(0, 11);
+      setUserInfo({ ...userInfo, phone: digits });
+    } else {
+      setUserInfo({ ...userInfo, [field]: value });
+    }
   };
 
   // 프로필 전체 정보 저장
   const handleSaveProfile = async () => {
     try {
-      // 프로필 정보 업데이트
-      const profileResponse = await fetch(`${API_URL}/api/user/update`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({
-          name: userInfo.name,
-          phone: userInfo.phone,
-          field: userInfo.major,
-        }),
-      });
+      const passwordFieldsFilled = Boolean(
+        passwordForm.current && passwordForm.new && passwordForm.confirm,
+      );
+      const profileChanged =
+        !initialUserInfo ||
+        initialUserInfo.name !== userInfo.name ||
+        initialUserInfo.phone !== userInfo.phone ||
+        initialUserInfo.major !== userInfo.major;
 
-      if (!profileResponse.ok) {
-        const errorData = await profileResponse.json();
-        alert(errorData.message || "정보 저장에 실패했습니다.");
+      if (!profileChanged && !passwordFieldsFilled) {
+        alert("변경된 내용이 없습니다.");
         return;
       }
 
-      // 비밀번호 3개 필드가 모두 입력된 경우에만 비밀번호 변경 요청
-      if (passwordForm.current && passwordForm.new && passwordForm.confirm) {
+      if (profileChanged) {
+        if (!userInfo.name.trim()) {
+          alert("이름을 입력해주세요.");
+          return;
+        }
+
+        if (!/^\d{11}$/.test(userInfo.phone)) {
+          alert("전화번호는 숫자 11자리를 입력해주세요.");
+          return;
+        }
+      }
+
+      if (passwordFieldsFilled) {
         if (passwordForm.new !== passwordForm.confirm) {
           alert("새 비밀번호가 일치하지 않습니다.");
           return;
         }
 
-        const passwordResponse = await fetch(`${API_URL}/api/user/update/password`, {
+        if (!/^[a-zA-Z0-9!@#$%^&*()\-_+=]{8,20}$/.test(passwordForm.new)) {
+          alert("비밀번호는 8~20자의 영문 대소문자, 숫자, 특수문자(!@#$%^&*()-_+=)만 사용 가능합니다.");
+          return;
+        }
+      }
+
+      if (profileChanged) {
+        const profileResponse = await fetch(`${API_URL}/api/users/update`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            name: userInfo.name,
+            phone: userInfo.phone,
+            field: userInfo.major,
+          }),
+        });
+
+        if (!profileResponse.ok) {
+          const errorData = await profileResponse.json().catch(() => ({}));
+          alert(errorData.message || "정보 저장에 실패했습니다.");
+          return;
+        }
+      }
+
+      if (passwordFieldsFilled) {
+        const passwordResponse = await fetch(`${API_URL}/api/users/update/password`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${sessionStorage.getItem("token")}`,
           },
           body: JSON.stringify({
             currentPassword: passwordForm.current,
@@ -120,17 +166,16 @@ const Setting = () => {
         });
 
         if (!passwordResponse.ok) {
-          const errorData = await passwordResponse.json();
+          const errorData = await passwordResponse.json().catch(() => ({}));
           alert(errorData.message || "비밀번호 변경에 실패했습니다.");
           return;
         }
-      } else {
-        alert("정보가 저장되었습니다.");
       }
 
+      alert("정보가 저장되었습니다.");
       setIsEditing(false);
       setPasswordForm({ current: "", new: "", confirm: "" });
-      fetchUserInfo();
+      await fetchUserInfo();
     } catch (error) {
       console.error(error);
       alert("정보 저장 중 오류가 발생했습니다.");
@@ -151,11 +196,11 @@ const Setting = () => {
   const proceedToDeleteAccount = async (password) => {
     try {
       // 비밀번호 확인
-      const checkResponse = await fetch(`${API_URL}/api/user/checkpassword`, {
+      const checkResponse = await fetch(`${API_URL}/api/users/verify-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${sessionStorage.getItem("token")}`,
         },
         body: JSON.stringify({ password }),
       });
@@ -166,16 +211,16 @@ const Setting = () => {
       }
 
       // 회원 탈퇴 진행
-      const deleteResponse = await fetch(`${API_URL}/api/user/delete`, {
+      const deleteResponse = await fetch(`${API_URL}/api/users/delete`, {
         method: "DELETE",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${sessionStorage.getItem("token")}`,
         },
       });
 
       if (deleteResponse.ok) {
         alert("회원탈퇴가 완료되었습니다.");
-        localStorage.removeItem("token");
+        sessionStorage.removeItem("token");
         setOpenWithdrawModal(false);
         navigate("/");
       } else {
@@ -191,9 +236,16 @@ const Setting = () => {
     return userInfo.name.charAt(0);
   };
 
+  const handleGoBack = () => {
+    navigate(-1);
+  };
+
   return (
     <div className="setting-container">
       <div className="setting-content">
+        <button className="back-button" onClick={handleGoBack}>
+          ← 뒤로가기
+        </button>
         <div className="profile-box">
           {/* 프로필 */}
           <div className="profile-avatar">{getInitial()}</div>
@@ -211,6 +263,7 @@ const Setting = () => {
                   onChange={(e) =>
                     handleUserInfoChange("name", e.target.value)
                   }
+                  maxLength="30"
                   disabled={!isEditing}
                 />
               </div>
@@ -224,10 +277,9 @@ const Setting = () => {
                 <input
                   type="email"
                   value={userInfo.email}
-                  onChange={(e) =>
-                    handleUserInfoChange("email", e.target.value)
-                  }
-                  disabled={!isEditing}
+                  maxLength="30"
+                  disabled
+                  title="이메일은 수정 불가능합니다"
                 />
               </div>
 
@@ -245,6 +297,7 @@ const Setting = () => {
                     onChange={(e) =>
                       handlePasswordInputChange("current", e.target.value)
                     }
+                    maxLength="20"
                   />
                 ) : (
                   <input
@@ -270,6 +323,7 @@ const Setting = () => {
                     onChange={(e) =>
                       handlePasswordInputChange("new", e.target.value)
                     }
+                    maxLength="20"
                   />
                 </div>
               )}
@@ -288,6 +342,7 @@ const Setting = () => {
                     onChange={(e) =>
                       handlePasswordInputChange("confirm", e.target.value)
                     }
+                    maxLength="20"
                   />
                 </div>
               )}
@@ -305,6 +360,7 @@ const Setting = () => {
                     handleUserInfoChange("phone", e.target.value)
                   }
                   disabled={!isEditing}
+                  maxLength="11"
                 />
               </div>
 
@@ -321,7 +377,6 @@ const Setting = () => {
                   disabled={!isEditing}
                 >
                   <option value="">전공/직무를 선택하세요</option>
-                  <option value="컴퓨터공학">컴퓨터공학</option>
                   <option value="소프트웨어 개발/IT엔지니어링">
                     소프트웨어 개발/IT엔지니어링
                   </option>

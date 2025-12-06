@@ -162,7 +162,7 @@ const Calendar = () => {
     setScheduleLoading(true);
     setScheduleError(null);
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       const response = await fetch(apiUrl, {
         method: "GET",
