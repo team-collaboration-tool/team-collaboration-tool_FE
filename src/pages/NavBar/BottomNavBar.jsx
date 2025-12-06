@@ -20,8 +20,6 @@ const PageNavBar = ({ leftContentState }) => {
 
   const isCalendarPage = location.pathname.endsWith("/calendar");
   const isSettingPage = location.pathname.endsWith("/setting");
-  const isInvalidProject = !projectID || projectID === "undefined";
-  const isBasePath = location.pathname === `/project/${projectID}`;
 
   const currentProjectIdFromURL = projectID ? parseInt(projectID, 10) : null;
 
