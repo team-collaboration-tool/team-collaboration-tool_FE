@@ -10,14 +10,14 @@ const API_URL = import.meta.env.VITE_DEV_PROXY_URL;
 
 const NavBar = () => {
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
   const [projectCode, setProjectCode] = useState("");
   const [userName, setUserName] = useState("");
   const [fullName, setFullName] = useState("");
 
   useEffect(() => {
     const loadUserFromStorage = () => {
-      const stored = localStorage.getItem("user");
+      const stored = sessionStorage.getItem("user");
 
       if (!stored) {
         setFullName("");
@@ -100,8 +100,8 @@ const NavBar = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    sessionStorage.removeItem("token");
+    lsessionStorage.removeItem("user");
     navigate("/");
   };
 

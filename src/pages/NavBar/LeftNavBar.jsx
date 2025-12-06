@@ -68,7 +68,7 @@ const AddScheduleForm = ({ date, onCancel, onScheduleAdded, projectId }) => {
 
       setMembersLoading(true);
       try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
 
         const response = await fetch(`${API_URL}/api/projects/${projectId}`, {
           method: "GET",
@@ -144,7 +144,7 @@ const AddScheduleForm = ({ date, onCancel, onScheduleAdded, projectId }) => {
 
     // ... (fetch 요청 부분은 기존과 동일)
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       const response = await fetch(
         `${API_URL}/api/calendar/projects/${projectId}`,
@@ -382,7 +382,7 @@ const EditScheduleForm = ({
 
       setMembersLoading(true);
       try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
 
         const response = await fetch(`${API_URL}/api/projects/${projectId}`, {
           method: "GET",
@@ -469,7 +469,7 @@ const EditScheduleForm = ({
     };
 
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       const response = await fetch(
         `${API_URL}/api/calendar/projects/${projectId}/${schedule.eventPk}`,
@@ -801,7 +801,7 @@ const LeftNavBar = ({ isCalendarPage }) => {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
         const response = await fetch(`${API_URL}/api/users/me`, {
           method: "GET",
           headers: {
@@ -829,7 +829,7 @@ const LeftNavBar = ({ isCalendarPage }) => {
     setIsViewingSchedule(true);
 
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       const response = await fetch(
         `${API_URL}/api/calendar/project/${selectedProjectId}/${schedule.eventPk}`,
         {
@@ -917,7 +917,7 @@ const LeftNavBar = ({ isCalendarPage }) => {
     }
 
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       const response = await fetch(
         `${API_URL}/api/calendar/projects/${selectedProjectId}/${eventPk}`,
@@ -952,7 +952,7 @@ const LeftNavBar = ({ isCalendarPage }) => {
 
   const fetchProjects = useCallback(async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       const response = await fetch(`${API_URL}/api/projects/me`, {
         method: "GET",
@@ -1025,7 +1025,7 @@ const LeftNavBar = ({ isCalendarPage }) => {
     setScheduleLoading(true);
     setScheduleError(null);
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       const response = await fetch(
         `${API_URL}/api/calendar/projects/${projectIdToUse}`,

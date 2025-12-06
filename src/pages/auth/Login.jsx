@@ -34,7 +34,7 @@ const Login = () => {
       const result = await response.json();
 
       if (response.ok) {
-        localStorage.setItem("token", result.token);
+        sessionStorage.setItem("token", result.token);
 
         try {
           const profileResponse = await fetch(`${API_URL}/api/users/me`, {
@@ -46,13 +46,13 @@ const Login = () => {
 
           if (profileResponse.ok) {
             const profile = await profileResponse.json();
-            localStorage.setItem("user", JSON.stringify(profile));
+            sessionStorage.setItem("user", JSON.stringify(profile));
           } else {
-            localStorage.removeItem("user");
+            sessionStorage.removeItem("user");
           }
         } catch (profileError) {
           console.error("사용자 정보 로드 실패:", profileError);
-          localStorage.removeItem("user");
+          sessionStorage.removeItem("user");
         }
 
         navigate("/dashboard");

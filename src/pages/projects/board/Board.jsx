@@ -30,7 +30,7 @@ export default function Board() {
 
     // GET : /api/users/me == 내 이메일 얻기
     const getMyUserInfo = React.useCallback(() => {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
 
         fetch(`${baseURL}/api/users/me`, {
             method: "GET",
@@ -64,7 +64,7 @@ export default function Board() {
 
     // GET : /api/projects/{projectId} == 프로젝트 멤버들 userPK 찾기
     const getMyUserPkFromProject = React.useCallback((projectId, myEmail) => {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
         fetch(`${baseURL}/api/projects/${projectId}`, {
             method: "GET",
             headers: {
@@ -449,7 +449,7 @@ export default function Board() {
         const loadPostList = (page, searchOptions = currentSearch) => {
             // UI의 페이지는 1부터 시작, API는 0부터 시작
             const apiPage = page - 1;
-            const token = localStorage.getItem("token");
+            const token = sessionStorage.getItem("token");
             const projectPk = ProjectPK;
 
             // 쿼리 파라미터 구성
@@ -813,7 +813,7 @@ export default function Board() {
                 if (!confirm("정말 이 게시글을 삭제하시겠습니까?")) {
                     return;
                 }
-                const token = localStorage.getItem("token");
+                const token = sessionStorage.getItem("token");
                 const targetId = post.id;
                 fetch(`${baseURL}/api/posts/${targetId}`, {
                     method: "DELETE",
@@ -888,7 +888,7 @@ export default function Board() {
 
             // 투표 후, 게시글 1개 상세조회 리프레쉬
             const refreshPostDetail = () => {
-                const token = localStorage.getItem("token");
+                const token = sessionStorage.getItem("token");
                 fetch(`${baseURL}/api/posts/${post.id}`, {
                     method: "GET",
                     headers: {
@@ -960,7 +960,7 @@ export default function Board() {
 
                     // 단일 or 복수 선택에 따른optionId
                     const selectedOptionIds = checkedInputs.map((input) => input.value);
-                    const token = localStorage.getItem("token");
+                    const token = sessionStorage.getItem("token");
 
 
                     // 중복투표 재투표
@@ -1103,7 +1103,7 @@ export default function Board() {
             const clickedId = item.dataset.id;
 
             if (!clickedId) return;
-            const token = localStorage.getItem("token");
+            const token = sessionStorage.getItem("token");
 
             fetch(`${baseURL}/api/posts/${clickedId}`, {
                 method: "GET",
@@ -1208,7 +1208,7 @@ export default function Board() {
             // =====================================================================
             // PUT : /api/posts/{postId} == 게시글 수정
             if (typeof isEditMode !== 'undefined' && isEditMode && editTargetId) {
-                const token = localStorage.getItem("token");
+                const token = sessionStorage.getItem("token");
                 const putPayload = {
                     title: title,
                     content: content,
@@ -1340,7 +1340,7 @@ export default function Board() {
                     formData.append("files", file);
                 });
             }
-            const token = localStorage.getItem("token");
+            const token = sessionStorage.getItem("token");
             console.log("지금 니 JWT 토큰 == ", token);
             console.log("POST : /api/posts 보내는 JSON 내용 == ", postPayload);     // 게시글 내용 console log
             console.log("POST : /api/posts 실제 FormData 내용 ↓↓↓");                // 첨부파일 내용 console log
