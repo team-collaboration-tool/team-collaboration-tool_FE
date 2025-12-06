@@ -159,7 +159,6 @@ const AddScheduleForm = ({ date, onCancel, onScheduleAdded, projectId }) => {
       );
 
       if (response.ok) {
-        console.log("일정 저장 성공!");
         window.dispatchEvent(new CustomEvent("scheduleUpdated"));
         onScheduleAdded();
         onCancel();
@@ -484,7 +483,6 @@ const EditScheduleForm = ({
       );
 
       if (response.ok) {
-        console.log("일정 수정 성공!");
         window.dispatchEvent(new CustomEvent("scheduleUpdated"));
         onScheduleUpdated();
         onCancel();
@@ -762,7 +760,7 @@ const ScheduleDetailView = ({ schedule, onClose, onEdit, onDelete }) => {
   );
 };
 
-const LeftNavBar = ({ isCalendarPage }) => {
+const LeftNavBar = ({ isCalendarPage, onContentChange }) => {
   const [projects, setProjects] = useState([]);
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -778,6 +776,7 @@ const LeftNavBar = ({ isCalendarPage }) => {
   const [scheduleDetailLoading, setScheduleDetailLoading] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [myUserPk, setMyUserPk] = useState(null);
+  const [myUserInfo, setMyUserInfo] = useState(null);
 
   const location = useLocation();
   const query = new URLSearchParams(location.search);
@@ -812,7 +811,14 @@ const LeftNavBar = ({ isCalendarPage }) => {
 
         if (response.ok) {
           const data = await response.json();
-          setMyUserPk(data.userPk);
+
+          // userPk가 있으면 바로 저장
+          if (data.userPk) {
+            setMyUserPk(data.userPk);
+          }
+
+          // email도 저장 (백업용)
+          setMyUserInfo(data);
         } else {
           console.error("사용자 정보 조회 실패:", response.status);
         }
@@ -862,7 +868,18 @@ const LeftNavBar = ({ isCalendarPage }) => {
   const handleCloseScheduleDetail = () => {
     setIsViewingSchedule(false);
     setSelectedSchedule(null);
+    setIsEditingSchedule(false);
+    setEditingSchedule(null);
   };
+
+  useEffect(() => {
+    if (isViewingSchedule || isEditingSchedule) {
+      setIsViewingSchedule(false);
+      setSelectedSchedule(null);
+      setIsEditingSchedule(false);
+      setEditingSchedule(null);
+    }
+  }, [selectedDateFromURL]);
 
   const handleAddScheduleClick = () => {
     if (dateToDisplay && !isNaN(dateToDisplay)) {
@@ -884,14 +901,14 @@ const LeftNavBar = ({ isCalendarPage }) => {
   };
 
   const handleEditSchedule = (schedule) => {
+    const isCreator = Number(schedule.createUserId) === Number(myUserPk);
+
     const isParticipant = schedule.participants?.some(
-      (participant) => participant.userPk === myUserPk
+      (participant) => Number(participant.userPk) === Number(myUserPk)
     );
 
-    const isCreator = schedule.createUserPk === myUserPk;
-
     if (!isParticipant && !isCreator) {
-      alert("수정 권한이 없습니다. (일정 참가자만 수정 가능)");
+      alert("수정 권한이 없습니다. (일정 생성자 또는 참가자만 수정 가능)");
       return;
     }
 
@@ -904,15 +921,14 @@ const LeftNavBar = ({ isCalendarPage }) => {
     if (!window.confirm("정말로 이 일정을 삭제하시겠습니까?")) {
       return;
     }
+    const isCreator = Number(schedule.createUserId) === Number(myUserPk);
 
     const isParticipant = schedule.participants?.some(
-      (participant) => participant.userPk === myUserPk
+      (participant) => Number(participant.userPk) === Number(myUserPk)
     );
 
-    const isCreator = schedule.createUserPk === myUserPk;
-
     if (!isParticipant && !isCreator) {
-      alert("삭제 권한이 없습니다. (일정 참가자만 삭제 가능)");
+      alert("삭제 권한이 없습니다. (일정 생성자 또는 참가자만 삭제 가능)");
       return;
     }
 
@@ -929,7 +945,6 @@ const LeftNavBar = ({ isCalendarPage }) => {
         }
       );
       if (response.ok) {
-        console.log("일정 삭제 성공!");
         window.dispatchEvent(new CustomEvent("scheduleUpdated"));
         setRefreshTrigger((prev) => prev + 1);
       } else {
@@ -949,6 +964,36 @@ const LeftNavBar = ({ isCalendarPage }) => {
     setIsEditingSchedule(false);
     setEditingSchedule(null);
   }, []);
+
+  useEffect(() => {
+    if (isCalendarPage && onContentChange) {
+      if (isAddingSchedule || isEditingSchedule || isViewingSchedule) {
+        // Schedule Form (추가/편집) 또는 Schedule Detail View (상세 보기)
+        onContentChange("SCHEDULE_VIEW");
+      } else if (
+        dateToDisplay &&
+        !isNaN(dateToDisplay.getTime()) &&
+        selectedProjectId
+      ) {
+        // Daily Schedules List (일별 일정 목록)
+        onContentChange("SCHEDULE_LIST");
+      } else {
+        // Project List (프로젝트 목록) 또는 초기 안내
+        onContentChange("PROJECT_LIST");
+      }
+    } else if (!isCalendarPage && onContentChange) {
+      // 캘린더 페이지가 아닐 때 (기본 프로젝트 목록 뷰)
+      onContentChange("PROJECT_LIST");
+    }
+  }, [
+    isCalendarPage,
+    onContentChange,
+    isAddingSchedule,
+    isEditingSchedule,
+    isViewingSchedule,
+    dateToDisplay,
+    selectedProjectId,
+  ]);
 
   const fetchProjects = useCallback(async () => {
     try {
@@ -1040,21 +1085,64 @@ const LeftNavBar = ({ isCalendarPage }) => {
 
       if (response.ok) {
         const data = await response.json();
+
+        // myUserPk가 없으면 participants에서 찾기
+        if (!myUserPk && myUserInfo?.email && data.length > 0) {
+          for (const schedule of data) {
+            if (Array.isArray(schedule.participants)) {
+              const me = schedule.participants.find(
+                (p) => p.email === myUserInfo.email
+              );
+              if (me) {
+                setMyUserPk(me.userPk);
+                break;
+              }
+            }
+          }
+        }
+
+        // 1단계: 날짜 필터링
         const selectedDate = new Date(selectedDateFromURL);
         selectedDate.setHours(0, 0, 0, 0);
-        const filteredSchedules = data.filter((schedule) => {
+        const dateFilteredSchedules = data.filter((schedule) => {
           const scheduleStart = new Date(schedule.startTime);
           const scheduleEnd = new Date(schedule.endTime);
 
-          // 시간 부분을 제거하고 날짜만 비교
           scheduleStart.setHours(0, 0, 0, 0);
           scheduleEnd.setHours(0, 0, 0, 0);
 
-          // 선택한 날짜가 일정 기간(시작일 ~ 종료일) 안에 포함되면 표시
           return selectedDate >= scheduleStart && selectedDate <= scheduleEnd;
         });
 
-        setSchedules(filteredSchedules);
+        // 2단계: 사용자 필터링
+        let finalSchedules = dateFilteredSchedules;
+
+        if (myUserPk) {
+          finalSchedules = dateFilteredSchedules.filter((schedule) => {
+            const isCreator =
+              Number(schedule.createUserId) === Number(myUserPk);
+            const isParticipant =
+              Array.isArray(schedule.participants) &&
+              schedule.participants.some(
+                (participant) => Number(participant.userPk) === Number(myUserPk)
+              );
+
+            return isCreator || isParticipant;
+          });
+        } else if (myUserInfo?.email) {
+          // myUserPk가 없으면 email로 필터링
+          finalSchedules = dateFilteredSchedules.filter((schedule) => {
+            const isParticipantByEmail =
+              Array.isArray(schedule.participants) &&
+              schedule.participants.some(
+                (participant) => participant.email === myUserInfo.email
+              );
+
+            return isParticipantByEmail;
+          });
+        }
+
+        setSchedules(finalSchedules);
       } else {
         const errorText = await response.text();
         console.error(
@@ -1080,6 +1168,8 @@ const LeftNavBar = ({ isCalendarPage }) => {
     isEditingSchedule,
     selectedProjectId,
     refreshTrigger,
+    myUserPk,
+    myUserInfo,
   ]);
 
   const handleScheduleAdded = useCallback(() => {
@@ -1099,6 +1189,7 @@ const LeftNavBar = ({ isCalendarPage }) => {
     isEditingSchedule,
     selectedProjectId,
     refreshTrigger,
+    myUserPk,
   ]);
 
   if (loading) {
@@ -1215,7 +1306,24 @@ const LeftNavBar = ({ isCalendarPage }) => {
         {isCalendarPage && (
           <div className="ProjectListContainer">
             {!isAddingSchedule && (
-              <div className="scheduleTitle">
+              <div
+                className={`scheduleTitle ${
+                  isViewingSchedule || isEditingSchedule
+                    ? "clickable-header"
+                    : ""
+                }`}
+                onClick={
+                  isViewingSchedule || isEditingSchedule
+                    ? handleCloseScheduleDetail
+                    : undefined
+                }
+                style={{
+                  cursor:
+                    isViewingSchedule || isEditingSchedule
+                      ? "pointer"
+                      : "default",
+                }}
+              >
                 <div className="selectedDate">
                   {isEditingSchedule ? "일정 편집" : formattedDate}
                 </div>
