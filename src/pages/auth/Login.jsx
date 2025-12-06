@@ -18,6 +18,16 @@ const Login = () => {
     e.preventDefault();
     await new Promise((r) => setTimeout(r, 1000));
 
+    if (!/^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[a-zA-Z]+$/.test(email)) {
+      alert("이메일 형식이 올바르지 않습니다.");
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9!@#$%^&*()\-_+=]{8,20}$/.test(password)) {
+      alert("비밀번호 형식이 올바르지 않습니다. (8~20자, 영문/숫자/특수문자)");
+      return;
+    }
+
     try {
       const response = await fetch(`${API_URL}/api/users/login`,
         {
@@ -92,6 +102,7 @@ const Login = () => {
               placeholder="이메일"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              maxLength="30"
               required
             />
           </div>
@@ -106,6 +117,7 @@ const Login = () => {
             <input
               type="password"
               placeholder="비밀번호"
+              maxLength="20"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
