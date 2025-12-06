@@ -1,17 +1,16 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import "./Login.css";
+import './Login.css';
 
-import Logo from "../../asset/user_icon/logo.svg";
-import LockIcon from "../../asset/user_icon/lock_icon.svg";
-import UserIcon from "../../asset/user_icon/user_icon.svg";
+import Logo from '../../asset/user_icon/logo.svg';
+import LockIcon from '../../asset/user_icon/lock_icon.svg';
+import UserIcon from '../../asset/user_icon/user_icon.svg';
 
 const API_URL = import.meta.env.VITE_DEV_PROXY_URL;
 
 const Login = () => {
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
-  const [loginCheck, setLoginCheck] = React.useState(false);
 
   const navigate = useNavigate();
 
@@ -19,25 +18,62 @@ const Login = () => {
     e.preventDefault();
     await new Promise((r) => setTimeout(r, 1000));
 
-    const response = await fetch(`${API_URL}/api/users/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email: email,
-        password: password,
-      }),
-    });
-    const result = await response.json();
+    if (!/^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[a-zA-Z]+$/.test(email)) {
+      alert("이메일 형식이 올바르지 않습니다.");
+      return;
+    }
 
-    if (response.status === 200) {
-      setLoginCheck(false);
-      localStorage.setItem("token", result.token);
-      localStorage.setItem("user", JSON.stringify(result.user));
-      navigate("/dashboard");
-    } else {
-      setLoginCheck(true);
+    if (!/^[a-zA-Z0-9!@#$%^&*()\-_+=]{8,20}$/.test(password)) {
+      alert("비밀번호 형식이 올바르지 않습니다. (8~20자, 영문/숫자/특수문자)");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/api/users/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: email,
+            password: password,
+          }),
+        }
+      );
+      const result = await response.json();
+
+      if (response.ok) {
+        sessionStorage.setItem("token", result.token);
+
+        try {
+          const profileResponse = await fetch(`${API_URL}/api/users/me`, {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${result.token}`,
+            },
+          });
+
+          if (profileResponse.ok) {
+            const profile = await profileResponse.json();
+            sessionStorage.setItem("user", JSON.stringify(profile));
+          } else {
+            sessionStorage.removeItem("user");
+          }
+        } catch (profileError) {
+          console.error("사용자 정보 로드 실패:", profileError);
+          sessionStorage.removeItem("user");
+        }
+
+        navigate("/dashboard");
+      } else {
+        alert(result.message || "존재하지 않는 아이디이거나 잘못된 비밀번호입니다.");
+      }
+    } catch (error) {
+      const raw = error.message;
+      const match = raw.match(/"([^"]*)"/);
+      const userMessage = match ? match[1] : raw;
+      alert(userMessage || "존재하지 않는 아이디이거나 잘못된 비밀번호입니다.");
     }
   };
 
@@ -66,6 +102,7 @@ const Login = () => {
               placeholder="이메일"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              maxLength="30"
               required
             />
           </div>
@@ -80,6 +117,7 @@ const Login = () => {
             <input
               type="password"
               placeholder="비밀번호"
+              maxLength="20"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -90,22 +128,13 @@ const Login = () => {
         {/* LOGIN 버튼 */}
         <button type="submit">LOGIN</button>
 
-        {/* 에러 메시지 */}
-        {loginCheck && (
-          <p className="error">아이디나 비밀번호가 일치하지 않습니다.</p>
-        )}
-
         {/* sign up 구분선 */}
         <div className="divider">
           <span className="divider-text">sign up</span>
         </div>
 
         {/* 회원가입 버튼 */}
-        <button
-          type="button"
-          className="signup-button"
-          onClick={handleSignupClick}
-        >
+        <button type="button" className="signup-button" onClick={handleSignupClick}>
           회원가입
         </button>
 
