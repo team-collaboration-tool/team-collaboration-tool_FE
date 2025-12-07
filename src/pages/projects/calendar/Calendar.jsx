@@ -37,6 +37,13 @@ const Calendar = () => {
 
   const isDashboard = location.pathname === "/dashboard";
 
+  // 날짜 파싱 헬퍼 함수
+  const parseSafeDate = (dateString) => {
+    if (!dateString) return new Date();
+    const safeString = dateString.endsWith("Z") ? dateString : dateString + "Z";
+    return new Date(safeString);
+  };
+
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
@@ -272,8 +279,8 @@ const Calendar = () => {
     dayEnd.setHours(23, 59, 59, 999);
 
     return allSchedules.filter((schedule) => {
-      const scheduleStart = new Date(schedule.startTime);
-      const scheduleEnd = new Date(schedule.endTime);
+      const scheduleStart = parseSafeDate(schedule.startTime);
+      const scheduleEnd = parseSafeDate(schedule.endTime);
 
       return scheduleStart <= dayEnd && scheduleEnd >= dayStart;
     });
