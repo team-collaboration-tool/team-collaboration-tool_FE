@@ -105,22 +105,22 @@ const AddScheduleForm = ({ date, onCancel, onScheduleAdded, projectId }) => {
     const [endYear, endMonth, endDay] = endDate.split("-").map(Number);
 
     // 2. Date.UTC를 사용하여 "보이는 시간 그대로" UTC 타임스탬프 생성 (예: 09:00 입력 -> 09:00 UTC)
-    const startDateTimeBase = new Date(
-      Date.UTC(startYear, startMonth - 1, startDay, startHour, startMinute)
+    const startDateTime = new Date(
+      startYear,
+      startMonth - 1,
+      startDay,
+      startHour,
+      startMinute
     );
-    const endDateTimeBase = new Date(
-      Date.UTC(endYear, endMonth - 1, endDay, endHour, endMinute)
+    const endDateTime = new Date(
+      endYear,
+      endMonth - 1,
+      endDay,
+      endHour,
+      endMinute
     );
 
-    // 3. 한국 시간 보정 (-9시간)하여 실제 UTC 시간 구하기
-    const startDateTimeUTC = new Date(
-      startDateTimeBase.getTime() - 9 * 60 * 60 * 1000
-    );
-    const endDateTimeUTC = new Date(
-      endDateTimeBase.getTime() - 9 * 60 * 60 * 1000
-    );
-
-    if (startDateTimeUTC >= endDateTimeUTC) {
+    if (startDateTime >= endDateTime) {
       alert("종료 시간은 시작 시간보다 늦어야 합니다.");
       return;
     }
@@ -135,8 +135,8 @@ const AddScheduleForm = ({ date, onCancel, onScheduleAdded, projectId }) => {
 
     const scheduleData = {
       title: title,
-      startTime: startDateTimeUTC.toISOString(),
-      endTime: endDateTimeUTC.toISOString(),
+      startTime: startDateTime.toISOString(),
+      endTime: endDateTime.toISOString(),
       description: description,
       color: selectedColor,
       participantUserPks: selectedParticipants,
@@ -353,16 +353,14 @@ const EditScheduleForm = ({
       ? utcDateString
       : utcDateString + "Z";
 
+    // UTC 시간을 받아 자동으로 로컬 시간 객체로 변환
     const date = new Date(dateStr);
 
-    // UTC 타임스탬프에 9시간(ms)을 더해 KST 기준의 타임스탬프 생성
-    const kstDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
-
     return {
-      // 9시간이 더해진 시점의 UTC 날짜/시간을 가져오면 한국 시간이 됨
-      date: formatUTCDateForInput(kstDate),
-      time: `${String(kstDate.getUTCHours()).padStart(2, "0")}:${String(
-        kstDate.getUTCMinutes()
+      // 9시간이 더해진 시점의 날짜/시간을 가져오면 한국 시간이 됨
+      date: formatLocalDateForInput(date),
+      time: `${String(date.getHours()).padStart(2, "0")}:${String(
+        date.getMinutes()
       ).padStart(2, "0")}`,
     };
   };
@@ -433,24 +431,23 @@ const EditScheduleForm = ({
     const [startYear, startMonth, startDay] = startDate.split("-").map(Number);
     const [endYear, endMonth, endDay] = endDate.split("-").map(Number);
 
-    // [수정 핵심 2] 저장 로직 (KST 입력 -> UTC 서버 전송)
     // 1. 입력받은 시간을 UTC 기준이라고 가정하고 타임스탬프 생성 (예: 17일 02:00 입력 -> 17일 02:00 UTC)
-    const startDateTimeBase = new Date(
-      Date.UTC(startYear, startMonth - 1, startDay, startHour, startMinute)
+    const startDateTime = new Date(
+      startYear,
+      startMonth - 1,
+      startDay,
+      startHour,
+      startMinute
     );
-    const endDateTimeBase = new Date(
-      Date.UTC(endYear, endMonth - 1, endDay, endHour, endMinute)
+    const endDateTime = new Date(
+      endYear,
+      endMonth - 1,
+      endDay,
+      endHour,
+      endMinute
     );
 
-    // 2. 거기서 9시간을 빼서 실제 UTC 시간으로 보정 (예: 17일 02:00 UTC - 9시간 = 16일 17:00 UTC)
-    const startDateTimeUTC = new Date(
-      startDateTimeBase.getTime() - 9 * 60 * 60 * 1000
-    );
-    const endDateTimeUTC = new Date(
-      endDateTimeBase.getTime() - 9 * 60 * 60 * 1000
-    );
-
-    if (startDateTimeUTC >= endDateTimeUTC) {
+    if (startDateTime >= endDateTime) {
       alert("종료 시간은 시작 시간보다 늦어야 합니다.");
       return;
     }
@@ -460,8 +457,8 @@ const EditScheduleForm = ({
 
     const scheduleData = {
       title: title,
-      startTime: startDateTimeUTC.toISOString(),
-      endTime: endDateTimeUTC.toISOString(),
+      startTime: startDateTime.toISOString(),
+      endTime: endDateTime.toISOString(),
       description: description,
       color: selectedColor,
       participantUserPks: selectedParticipants,
@@ -640,9 +637,16 @@ const EditScheduleForm = ({
   );
 };
 
+// 날짜 파싱 헬퍼 함수
+const parseSafeDate = (dateString) => {
+  if (!dateString) return new Date();
+  const safeString = dateString.endsWith("Z") ? dateString : dateString + "Z";
+  return new Date(safeString);
+};
+
 const ScheduleDetailView = ({ schedule, onClose, onEdit, onDelete }) => {
-  const scheduleStartDate = new Date(schedule.startTime);
-  const scheduleEndDate = new Date(schedule.endTime);
+  const scheduleStartDate = parseSafeDate(schedule.startTime);
+  const scheduleEndDate = parseSafeDate(schedule.endTime);
 
   // 같은 날인지 확인
   const isSameDay =
@@ -668,18 +672,13 @@ const ScheduleDetailView = ({ schedule, onClose, onEdit, onDelete }) => {
     : `${formattedStartDate} ~ ${formattedEndDate}`;
 
   const getKSTTime = (utcDate) => {
-    const utcHour = utcDate.getUTCHours();
-    const utcMinute = utcDate.getUTCMinutes();
-    let kstHour = utcHour + 9;
+    const localHour = utcDate.getHours();
+    const localMinute = utcDate.getMinutes();
 
-    if (kstHour >= 24) {
-      kstHour -= 24;
-    }
+    const period = localHour < 12 ? "오전" : "오후";
+    const displayHour = localHour % 12 || 12;
 
-    const period = kstHour < 12 ? "오전" : "오후";
-    const displayHour = kstHour % 12 || 12;
-
-    return `${period} ${displayHour}:${String(utcMinute).padStart(2, "0")}`;
+    return `${period} ${displayHour}:${String(localMinute).padStart(2, "0")}`;
   };
 
   const formattedTime = `${getKSTTime(scheduleStartDate)} - ${getKSTTime(
@@ -1105,8 +1104,8 @@ const LeftNavBar = ({ isCalendarPage, onContentChange }) => {
         const selectedDate = new Date(selectedDateFromURL);
         selectedDate.setHours(0, 0, 0, 0);
         const dateFilteredSchedules = data.filter((schedule) => {
-          const scheduleStart = new Date(schedule.startTime);
-          const scheduleEnd = new Date(schedule.endTime);
+          const scheduleStart = parseSafeDate(schedule.startTime);
+          const scheduleEnd = parseSafeDate(schedule.endTime);
 
           scheduleStart.setHours(0, 0, 0, 0);
           scheduleEnd.setHours(0, 0, 0, 0);
