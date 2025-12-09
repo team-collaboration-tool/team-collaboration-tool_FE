@@ -623,6 +623,7 @@ export default function Board() {
             // API 응답에 없는 필드는 false 처리
             const allowMultipleChoices = voteData.allowMultipleChoices || false;
             const isAnonymous = voteData.isAnonymous || false;
+            const whenFinishVote = voteData.endTime;
 
             // 선택지 목록 (Voting View)
             const optionsHTML = options.map((opt) => {
@@ -667,7 +668,10 @@ export default function Board() {
                   <div class="VOTE_choose_container">
                     ${optionsHTML}
                   </div>
-                  <button class="VOTE_complete_button"><b>투표완료</b></button>
+                  <div class="VOTE_complete_container">
+                    <button class="VOTE_complete_button"><b>투표완료</b></button>
+                    <h2 id="VOTE_when_finish">투표 마감 시간: ${formatDateTime(whenFinishVote)}</h2>
+                    </div>
                 </div>
 
                 <div class="VOTE_Result">
@@ -677,7 +681,10 @@ export default function Board() {
                   <div class="VoteResult_grid">
                     ${resultsHTML}
                   </div>
-                  <button class="VoteResult_revote_button">재투표하기</button>
+                  <div class="VOTE_complete_container">
+                    <button class="VoteResult_revote_button">재투표하기</button>
+                    <h2 id="VOTE_when_finish">투표 마감 시간: ${formatDateTime(whenFinishVote)}</h2>
+                    </div>
                 </div>
               </div>
             `;
