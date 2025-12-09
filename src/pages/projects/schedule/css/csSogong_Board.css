@@ -839,8 +839,17 @@
     color: rgb(0, 0, 0);
 }
 
+.VOTE_complete_container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
 .VOTE_complete_button {
     cursor: pointer;
+    margin-left: 0rem;
+    margin-right: 0.5rem;
 
     padding: 0.5rem 1.5rem;
     background-color: rgb(51, 161, 224);
@@ -848,6 +857,13 @@
     font-weight: 600;
     border-radius: 0.5rem;
     border: none;
+}
+
+#VOTE_when_finish {
+    display: flex;
+    margin-left: 0.5rem;
+    margin-right: auto;
+    padding: 0.5rem;
 }
 
 
@@ -883,7 +899,7 @@
 #VoteResult_title {
     font-size: 1.5rem;
     font-weight: bold;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     color: rgb(0, 0, 0);
 }
 
